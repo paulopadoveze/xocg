@@ -2,7 +2,7 @@
   <div class="p-8 max-w-4xl mx-auto">
     <div class="grid md:grid-cols-2 gap-8">
       <!-- Create Room Section -->
-      <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class=" rounded-xl shadow-lg p-6">
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium mb-1">Your Name</label>
@@ -54,7 +54,7 @@
       </div>
 
       <!-- Join Room Section -->
-      <div class="bg-white rounded-xl shadow-lg p-6">
+      <div class="rounded-xl shadow-lg p-6">
         <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
           Join Existing Room
         </h2>
