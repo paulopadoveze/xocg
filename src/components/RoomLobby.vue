@@ -377,8 +377,7 @@ async function initializeGameState() {
     const startingPlayerName = players.value[randomIndex].player_name
     
     // Generate card IDs
-    const civisCardIds = generateRandomIds(81, 100, 20)
-    const othersCardIds = generateRandomIds(1, 80, 80)
+    const mainCardIds = generateRandomIds(1, 100, 100)
 
     //console.log('Starting player ID:', startingPlayerId)
     
@@ -402,23 +401,13 @@ async function initializeGameState() {
       currentTurnPlayerId: startingPlayerId,
       currentTurnPlayerName: startingPlayerName,
       decks: {
-        civis: {
-          cardIds: civisCardIds,
-          count: civisCardIds.length,
+        main: {
+          cardIds: mainCardIds,
+          count: mainCardIds.length,
           metadata: {
-            type: 'Civis',
-            minId: 81,
-            maxId: 100,
-            shuffledAt: new Date().toISOString()
-          }
-        },
-        others: {
-          cardIds: othersCardIds,
-          count: othersCardIds.length,
-          metadata: {
-            type: 'Others',
+            type: 'main',
             minId: 1,
-            maxId: 80,
+            maxId: 100,
             shuffledAt: new Date().toISOString()
           }
         }
@@ -462,10 +451,10 @@ function generateRandomIds(min, max, count) {
 function drawInitialCards(gameState) {
   gameState.players.forEach(player => {
     for (let i = 0; i < 5; i++) {
-      if (gameState.decks.others.cardIds.length > 0) {
-        const cardId = gameState.decks.others.cardIds.pop()
+      if (gameState.decks.main.cardIds.length > 0) {
+        const cardId = gameState.decks.main.cardIds.pop()
         player.hand.push(cardId)
-        gameState.decks.others.count--
+        gameState.decks.main.count--
       }
     }
   })

@@ -1,118 +1,110 @@
 <template>
-  <div
-    :class="[
-      'card',
-      {
-        'card--rotated': card.rotated,
-        'card--highlighted': card.highlighted,
-        'card--selected': card.selected,
-        'card--draggable': draggable,
-        'card--interactive': true
-      }
-    ]"
-    :draggable="draggable"
-    @dragstart="handleDragStart"
-    @dblclick="handleDoubleClick"
-    @contextmenu="handleContextMenu"
-    @mousedown="handleMouseDown"
-    @mouseup="handleMouseUp"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-    @focus="handleFocus"
-    @blur="handleBlur"
-    tabindex="0"
-    :aria-label="`${card.name} - ${card.type} card`"
+  <tippy 
+    :follow-cursor="true"
+    :delay="[300, 0]"
+    :interactive="false"
+    :allow-html="true"
+    :offset="[0, 50]"
+    theme="custom"
   >
-    <!-- Card Content -->
-    <div class="card__content">
-      <div class="card__header">
-        <h3 class="card__name">{{ card.name }}</h3>
-        <div v-if="card.cost" class="card__cost">
-          {{ card.cost }}⚡
-        </div>
-      </div>
-      
-      <div v-if="card.artwork" class="card__artwork">
-        <!-- Card artwork placeholder -->
-        <div class="card__artwork-placeholder"></div>
-      </div>
-      
-      <div class="card__body">
-        <div class="card__description">
-          {{ card.description }}
-        </div>
-        
-        <div v-if="card.power || card.health" class="card__stats">
-          <span v-if="card.power" class="card__stat card__stat--power">
-            ⚔️ {{ card.power }}
-          </span>
-          <span v-if="card.health" class="card__stat card__stat--health">
-            ❤️ {{ card.health }}
-          </span>
-        </div>
-      </div>
-      
-      <div class="card__footer">
-        <div class="card__type">{{ card.type }}</div>
-        <div v-if="card.rarity" class="card__rarity" :class="`card__rarity--${card.rarity}`">
-          {{ card.rarity.charAt(0).toUpperCase() }}
-        </div>
-      </div>
-    </div>
-    
-    <!-- Card Glow Effect -->
-    <div class="card__glow" :class="{ 'card__glow--active': card.highlighted }"></div>
-    
-    <!-- Tooltip -->
-    <div 
-      v-if="showTooltip && !isDragging"
-      class="card__tooltip"
-      :class="{ 'card__tooltip--visible': showTooltip }"
+    <div
+      :class="[
+        'card',
+        {
+          'card--rotated': card.rotated,
+          'card--highlighted': card.highlighted,
+          'card--selected': card.selected,
+          'card--draggable': draggable,
+          'card--interactive': true,
+        },
+        getcardTypeClass(card.type)
+      ]"
+      :draggable="draggable"
+      @dragstart="handleDragStart"
+      @dblclick="handleDoubleClick"
+      @contextmenu="handleContextMenu"
+      @mousedown="handleMouseDown"
+      @mouseup="handleMouseUp"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
+      @focus="handleFocus"
+      @blur="handleBlur"
+      tabindex="0"
+      :aria-label="`${card.name} - ${card.type} card`"
+      ref="cardContent"
     >
-      <div class="card__tooltip-content">
-        <h4 class="card__tooltip-title">{{ card.name }}</h4>
-        <div class="card__tooltip-type">{{ card.type }}</div>
-        <p class="card__tooltip-description">{{ card.description }}</p>
-        
-        <div v-if="card.effects" class="card__tooltip-effects">
-          <div class="card__tooltip-effects-title">Effects:</div>
-          <ul class="card__tooltip-effects-list">
-            <li 
-              v-for="(effect, index) in card.effects"
-              :key="index"
-              class="card__tooltip-effect"
-            >
-              • {{ effect }}
-            </li>
-          </ul>
+      
+      <!-- Card Content -->
+      <div class="card__content">
+        <div class="card__artwork">
+          <img :src="imageSrc" v-if="card.img"  >
+        </div>
+        <div class="card__header">
+          <h3 class="card__name -resumed">{{ card.name }}</h3>
+          <span v-if="card.power" class="card__power">
+            {{ card.power }}
+          </span>
+        </div>
+        <div class="card__body">
+          <div class="card__type">{{ card.type }}</div>
+          <div class="card__description">
+            {{ card.ability }}
+          </div>
+          <div v-if="card.power || card.health" class="card__stats">
+            
+            <span v-if="card.health" class="card__stat card__stat--health">
+              {{ card.health }}
+            </span>
+          </div>
         </div>
         
-        <div class="card__tooltip-stats">
-          <div v-if="card.cost" class="card__tooltip-stat">
-            <span class="card__tooltip-stat-label">Cost:</span>
-            <span class="card__tooltip-stat-value">{{ card.cost }}</span>
-          </div>
-          <div v-if="card.power" class="card__tooltip-stat">
-            <span class="card__tooltip-stat-label">Power:</span>
-            <span class="card__tooltip-stat-value">{{ card.power }}</span>
-          </div>
-          <div v-if="card.health" class="card__tooltip-stat">
-            <span class="card__tooltip-stat-label">Health:</span>
-            <span class="card__tooltip-stat-value">{{ card.health }}</span>
+        <div class="card__footer">
+          
+          <div v-if="card.rarity" class="card__rarity" :class="`card__rarity--${card.rarity}`">
+            {{ card.rarity.charAt(0).toUpperCase() }}
           </div>
         </div>
       </div>
+      
+      <div class="card__glow" :class="{ 'card__glow--active': card.highlighted }"></div>
+      
     </div>
-    
-    <!-- Drag Preview Overlay -->
-    <div v-if="isDragging" class="card__drag-overlay">
-      <div class="card__drag-icon">📤</div>
-    </div>
-  </div>
+
+    <template #content>
+      
+      <div class="card -large" :class="getcardTypeClass(card.type)">
+        <div class="card__content">
+          <div class="card__artwork">
+            <img :src="imageSrc" v-if="card.img"  >
+          </div>
+          <div class="card__header">
+            <h3 class="card__name">{{ card.name }}</h3>
+            <span v-if="card.power" class="card__power">
+              {{ card.power }}
+            </span>
+          </div>
+          <div class="card__body">
+            <div class="card__type">{{ card.type }}</div>
+            <div class="card__description">
+              {{ card.ability }}
+            </div>
+          </div>
+          
+          <div class="card__footer">
+           
+            <div v-if="card.rarity" class="card__rarity" :class="`card__rarity--${card.rarity}`">
+              {{ card.rarity.charAt(0).toUpperCase() }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </tippy>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useTippy } from 'vue-tippy'
 
 const props = defineProps({
   card: {
@@ -135,10 +127,6 @@ const props = defineProps({
   draggable: {
     type: Boolean,
     default: true
-  },
-  disableTooltip: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -154,20 +142,11 @@ const emit = defineEmits([
   'blur'
 ])
 
-const showTooltip = ref(false)
-const isDragging = ref(false)
-const tooltipTimeout = ref(null)
+const imageSrc = computed(() => 
+  props.card.img ? new URL(`../assets/cardImages/${props.card.img}`, import.meta.url).href : ''
+)
 
-const cardRarityColor = computed(() => {
-  const colors = {
-    common: 'var(--color-text-muted)',
-    uncommon: 'var(--color-success)',
-    rare: 'var(--color-primary)',
-    epic: 'var(--color-accent)',
-    legendary: 'var(--color-warning)'
-  }
-  return colors[props.card.rarity] || colors.common
-})
+const isDragging = ref(false)
 
 const handleDragStart = (event) => {
   isDragging.value = true
@@ -184,6 +163,26 @@ const handleDragStart = (event) => {
   }
   emit('drag-start', event)
 }
+
+const cardContent = ref();
+
+function getcardTypeClass(type) {
+  if(type=="Substituto"){
+    return 'type-substitute'
+  }
+  if(type=="Ouvinte"){
+    return 'type-listener'
+  }
+  if(type=="Personagem"){
+    return 'type-character'
+  }
+  if(type=="Tradicional"){
+    return 'type-host'
+  }
+
+  return 'type-none'
+}
+
 
 const handleDoubleClick = (event) => {
   event.preventDefault()
@@ -204,49 +203,60 @@ const handleMouseUp = (event) => {
 }
 
 const handleMouseEnter = () => {
-  if (!props.disableTooltip) {
-    tooltipTimeout.value = setTimeout(() => {
-      showTooltip.value = true
-    }, 300)
-  }
-  emit('mouse-enter')
+  emit('mouse-enter', props.card)
 }
 
 const handleMouseLeave = () => {
-  if (tooltipTimeout.value) {
-    clearTimeout(tooltipTimeout.value)
-  }
-  showTooltip.value = false
   emit('mouse-leave')
 }
 
 const handleFocus = () => {
-  if (!props.disableTooltip) {
-    showTooltip.value = true
-  }
   emit('focus')
 }
 
 const handleBlur = () => {
-  showTooltip.value = false
   emit('blur')
 }
 </script>
 
 <style lang="scss" scoped>
+
+:root {
+ 
+}
+// Card styles
 .card {
+  --bgCard: #595959;
+  --bgCard-light: #202020;
+
   position: relative;
-  width: 6rem;
-  height: 9rem;
-  background: linear-gradient(145deg, var(--color-card-bg) 0%, #222233 100%);
-  border: 2px solid var(--color-card-border);
-  border-radius: 10px;
+  width: 7rem;
+  aspect-ratio: 6/8.5;
+  background: linear-gradient(145deg, var(--bgCard) 0%, var(--bgCard-light) 100%);
+  border: 1px solid var(--color-card-border);
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   overflow: hidden;
   outline: none;
   
+  &.type-substitute {
+    --bgCard: red
+  }
+
+  &.type-listener {
+    --bgCard: green
+  }
+
+  &.type-host {
+    --bgCard: purple
+  }
+
+  &.type-character {
+    --bgCard: orange
+  }
+
   &:hover {
     transform: translateY(-8px) scale(1.05);
     border-color: var(--color-primary);
@@ -301,20 +311,15 @@ const handleBlur = () => {
       cursor: grabbing;
     }
   }
-  
-  &--interactive {
-    &:hover .card__tooltip {
-      opacity: 1;
-      visibility: visible;
-      transform: translate(-50%, -10px);
-    }
+
+  &.-large {
+    width:15rem;
   }
   
   &__content {
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 0.75rem;
     position: relative;
     z-index: 2;
   }
@@ -323,10 +328,15 @@ const handleBlur = () => {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+
     margin-bottom: 0.5rem;
+    z-index: 3;
+    position: relative;
   }
   
   &__name {
+    padding: 0.5rem;
+    background: var(--color-card-bg);
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--color-text-primary);
@@ -335,9 +345,16 @@ const handleBlur = () => {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+  }
+
+  &__power {
+    background:radial-gradient(circle,rgba(247, 107, 32, 1) 0%, rgba(253, 29, 29, 1) 100%);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    width: 2rem;
+    border-radius: 4px;
   }
   
   &__cost {
@@ -352,11 +369,15 @@ const handleBlur = () => {
   }
   
   &__artwork {
-    height: 4rem;
-    margin-bottom: 0.5rem;
-    border-radius: 6px;
+    background: black;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 0% 100%);
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(0, 217, 255, 0.1));
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 35%;
+    right: 0;
+    z-index: 1;
   }
   
   &__artwork-placeholder {
@@ -373,18 +394,24 @@ const handleBlur = () => {
     flex: 1;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 3;
+    margin-top: 50%;
   }
   
   &__description {
+    background: #232323;
     font-size: 0.625rem;
     color: var(--color-text-secondary);
     line-height: 1.3;
     margin-bottom: 0.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+    padding: 1rem 1rem;
+    margin: -.5rem .5rem 0.5rem;
+    height: 100%;
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
   
   &__stats {
@@ -399,10 +426,7 @@ const handleBlur = () => {
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
     
-    &--power {
-      background: rgba(255, 56, 96, 0.1);
-      color: var(--color-error);
-    }
+
     
     &--health {
       background: rgba(0, 255, 136, 0.1);
@@ -420,10 +444,16 @@ const handleBlur = () => {
   }
   
   &__type {
+    background: var(--color-card-bg);
+    border-radius: 100px;
     font-size: 0.5625rem;
-    color: var(--color-text-muted);
+    padding: 0.2rem;
+    margin: 0 1rem;
+    text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,0.1);
   }
   
   &__rarity {
@@ -490,123 +520,6 @@ const handleBlur = () => {
     }
   }
   
-  &__tooltip {
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    width: 18rem;
-    background: var(--color-bg-secondary);
-    border: 2px solid var(--color-primary);
-    border-radius: 12px;
-    box-shadow: 
-      0 20px 60px rgba(0, 0, 0, 0.8),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    pointer-events: none;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 10px solid transparent;
-      border-top-color: var(--color-primary);
-    }
-    
-    &--visible {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(0);
-    }
-  }
-  
-  &__tooltip-content {
-    color: var(--color-text-primary);
-  }
-  
-  &__tooltip-title {
-    font-size: 1.125rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    color: var(--color-primary);
-  }
-  
-  &__tooltip-type {
-    font-size: 0.75rem;
-    color: var(--color-accent);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-  }
-  
-  &__tooltip-description {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1rem;
-  }
-  
-  &__tooltip-effects {
-    margin-bottom: 1rem;
-  }
-  
-  &__tooltip-effects-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-warning);
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-  }
-  
-  &__tooltip-effects-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  &__tooltip-effect {
-    font-size: 0.75rem;
-    color: var(--color-text-secondary);
-    margin-bottom: 0.25rem;
-    padding-left: 0.5rem;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-  
-  &__tooltip-stats {
-    display: flex;
-    gap: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 0.75rem;
-  }
-  
-  &__tooltip-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  &__tooltip-stat-label {
-    font-size: 0.6875rem;
-    color: var(--color-text-muted);
-    margin-bottom: 0.125rem;
-  }
-  
-  &__tooltip-stat-value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text-primary);
-  }
-  
   &__drag-overlay {
     position: absolute;
     top: 0;
@@ -659,11 +572,7 @@ const handleBlur = () => {
     &:hover {
       transform: translateY(-4px) scale(1.03);
     }
-    
-    &__tooltip {
-      width: 14rem;
-      bottom: calc(100% + 8px);
-    }
   }
 }
+
 </style>

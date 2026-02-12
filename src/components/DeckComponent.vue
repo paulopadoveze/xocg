@@ -1,17 +1,14 @@
 <template>
   <div class="relative">
     <div 
-      class="bg-white border-2 border-gray-300 rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-shadow"
+      class=""
       @dblclick="$emit('draw')"
       @contextmenu.prevent="showContextMenu($event)"
       @dragover.prevent
       @drop="onDrop"
     >
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="font-semibold text-lg">{{ title }}</h3>
-        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">
+      <div class="numberOfCards">
           {{ count }} cards
-        </span>
       </div>
       
       <div class="relative h-40 flex items-center justify-center">
@@ -101,7 +98,7 @@ const props = defineProps({
   },
   deckType: {
     type: String,
-    default: 'civis'
+    default: 'main'
   }
 })
 
@@ -168,3 +165,9 @@ onUnmounted(() => {
   })
 })
 </script>
+
+<style scoped>
+  .numberOfCards {
+    font-size: 12px;
+  }
+</style>
