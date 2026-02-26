@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { mainDeck as allCards } from '../data/allCards.js'
 
 export const useGameStore = defineStore('game', () => {
+  // Card data
+  const mainDeck = ref(allCards)
+
   // Game state
   const gameState = ref(null)
   const isLoading = ref(false)
@@ -33,6 +37,7 @@ export const useGameStore = defineStore('game', () => {
     roomCode.value = state?.roomCode || ''
     players.value = state?.players || []
     currentTurnPlayerId.value = state?.currentTurnPlayerId || ''
+    currentPlayerActive = state?.currentPlayerActive || ''
     turnNumber.value = state?.turnNumber || 1
   }
   
@@ -41,6 +46,7 @@ export const useGameStore = defineStore('game', () => {
     roomCode.value = ''
     players.value = []
     currentTurnPlayerId.value = ''
+    currentPlayerActive = ''
     turnNumber.value = 1
     isLoading.value = false
     error.value = ''
@@ -62,6 +68,9 @@ export const useGameStore = defineStore('game', () => {
   }
   
   return {
+    // Card data
+    mainDeck,
+
     // State
     gameState,
     isLoading,

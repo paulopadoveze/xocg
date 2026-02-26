@@ -1,7 +1,9 @@
 <template>
   <div class="game-container">
     <!-- Loading state -->
-    <main class="mainboard">
+    <main class="mainboard">     
+       
+
       <div v-if="loading" class="game-loading">
         <div class="game-loading__spinner"></div>
         <p class="game-loading__text">Loading game...</p>
@@ -9,29 +11,51 @@
       
       <!-- Error state -->
       <div v-else-if="error" class="game-error">
-        <div class="game-error__icon">⚠️</div>
         <h2 class="game-error__title">{{ error }}</h2>
-        <button 
-          @click="router.push('/')"
-          class="game-error__button"
-        >
-          Return to Home
-        </button>
       </div>
 
       <div v-else class="game-content">
+
         <div class="players-board-container" :class="getNumberOfPlayerCSSClass">
+
           <div v-for="playerState in gameState.players">      
-            <div class="playerBoard" v-if="currentPlayer.id == playerState.id" :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
+
+            <div class="playerBoard" v-if="currentPlayer.id !== playerState.id" :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
+              <div class="playerField"
+                @dragover.prevent
+                @drop="onCardDrop($event, playerState.id, 'field')"
+              >
+                <PlayerField :cards="playerState.field" />
+                <div v-for="card in playerState.field">
+                    <CardComponent 
+                      :key="card.id"
+                      :card-id="card.cardId"
+                      draggable
+                      @dragstart="onCardDragStart($event, card.cardId, playerState.id, 'field')"
+                      @dragend="onCardDragEnd"
+                      @double-click="playCard(card.cardId)"
+                    />
+                </div>
+              </div>
+              <div class="opponentHand">
+                <div class="opponentCard" v-for="card in playerState.hand">
+                  <IconXorume />
+                </div>
+              </div>
+            </div>
+            <div class="playerBoard" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
+              <PlayerField :cards="playerState.field" />
               <div class="playerField">
                 <CardComponent 
                   v-for="card in playerState.field"
-                  :key="card"
-                  :card="getCardDetails(card.cardId)"
+                  :key="card.cardId"
+                  :card-id="card.cardId"
                   draggable
-                  @drag-start="onCardDragStart($event, card)"
+                  @drag="onCardDragStart($event, cardId)"
+                  @dragend="onCardDrop($event, 1)"
                   @double-click="tapCard(cardId)"
                 />
+                
               </div>
               <!-- Player's Hand -->
               <div class="gameHand">
@@ -39,42 +63,14 @@
                   <CardComponent 
                     v-for="cardId in playerHand"
                     :key="cardId"
-                    :card="getCardDetails(cardId)"
+                    :card-id="cardId"
                     draggable
                     @drag-start="onCardDragStart($event, cardId)"
                     @double-click="playCard(cardId)"
                   />
                 </div>
               </div>
-            </div>
-            <div class="playerBoard" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
-              <div class="playerField">
-                <CardComponent 
-                  v-for="card in playerState.field"
-                  :key="card.id"
-                  :card="getCardDetails(card.cardId)"
-                  draggable
-                  @drag-start="onCardDragStart($event, cardId)"
-                  @double-click="playCard(cardId)"
-                  @mouse-enter="handleCardMouseEnter($event)"
-                />
-              </div>
-              <div class="opponentHand">
-                <div class="opponentCard" v-for="card in playerState.hand">
-                  <svg width="592" height="592" viewBox="0 0 592 592" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M510 335.5C510 419.171 409.583 507.5 311 507.5C212.417 507.5 121 494.671 121 411C116 305 216 180 322.5 180C421.083 180 510 251.829 510 335.5Z" fill="#BEB363"/>
-                    <path d="M396 128C382 144 332 201 293 201C264 174 209 146.127 209 113.804C225 98.5357 270 123.473 287 68C337 103 356 137.527 396 128Z" fill="#BEB363"/>
-                    <path d="M350 179C350 184.523 333.502 181.5 315 181.5C296.498 181.5 275 194.523 275 189C275 183.477 293.998 175.5 312.5 175.5C331.002 175.5 350 173.477 350 179Z" fill="#0D0F09"/>
-                    <path d="M357.5 267C357.5 329.684 360 301.5 355 332.5C338.5 310.5 357.731 295.5 337 238C335.643 234.237 325 216 323.5 191C332 191 355 238 357.5 267Z" fill="#101006"/>
-                    <path d="M426.5 252C433.5 282 438.5 291 433.5 322C422 314.5 423.52 289.5 410 252C408.643 248.237 385 203.5 358 183C366.5 183 406 210 426.5 252Z" fill="#101006"/>
-                    <path d="M242 295.5C242 358.184 257 357.5 272 398.5C256 394.5 232.857 351.763 231.5 348C230.143 344.237 206.5 284.5 282.5 192C291 192 239.5 266.5 242 295.5Z" fill="#101006"/>
-                    <path d="M552 296C552 154.615 437.385 40 296 40C154.615 40 40 154.615 40 296C40 437.385 154.615 552 296 552C437.385 552 552 437.385 552 296ZM592 296C592 459.476 459.476 592 296 592C132.524 592 0 459.476 0 296C0 132.524 132.524 0 296 0C459.476 0 592 132.524 592 296Z" fill="#BEB363"/>
-                    <path d="M261.011 125.434C267.219 129.49 297.938 166.597 297.938 176C284.504 168.986 287.003 158.012 263.01 136.817C259.011 132.363 231.519 119.99 242.516 119C251.014 119.99 254.95 121.475 261.011 125.434Z" fill="#101006"/>
-                    <path d="M295.5 123C299.5 153.5 310.5 162.5 310.5 171C296 161 293 138.5 289.5 131.5C286.25 125 281.003 104.49 292 103.5C298 111 294.559 115.822 295.5 123Z" fill="#101006"/>
-                    <path d="M345 146C340 149 332.18 161.5 332.18 170C317.68 160 331.039 146.5 333.539 144C340.039 137.5 350.5 132 356.039 135C360.5 139 351.208 142.275 345 146Z" fill="#101006"/>
-                  </svg>
-                </div>
-              </div>
+
             </div>
             
           </div>
@@ -83,7 +79,6 @@
       </div>
     </main>
    
-
     <aside class="sidebar">
       <div class="cardDetails"></div>  
       <div class="gameDecks">
@@ -96,6 +91,9 @@
           @peek="peekDeck('main')"
           @shuffle="shuffleDeck('main')"
         />
+      </div>
+      <div class="gameGarbage">
+        
       </div>
 
       <div class="game-players">
@@ -180,15 +178,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSupabase } from '../composables/useSupabase'
 import { useRealtimeStore } from '../stores/realtimeStore.js'
+import { useGameStore } from '../stores/gameStore.js'
+import { storeToRefs } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
-import { mainDeck as mainDeck } from '../data/allCards.js'
+import draggable from 'vuedraggable'
+
+import IconXorume from '../assets/icons/IconXorume.vue'
+
 import CardComponent from './CardComponent.vue'
 import DeckComponent from './DeckComponent.vue'
 import ArrowRenderer from './ArrowRenderer.vue'
+
+import PlayerField from './gameBoard/PlayerField.vue'
 import GameLog from './GameLog.vue'
 
 
@@ -207,6 +212,8 @@ const {
   getRoom,
 } = useSupabase()
 const realtimeStore = useRealtimeStore()
+const gameStore = useGameStore()
+const { mainDeck } = storeToRefs(gameStore)
 
 // Game state
 const gameState = ref({
@@ -230,7 +237,6 @@ const gameState = ref({
 // UI state
 const loading = ref(true)
 const error = ref('')
-
 
 const showDebug = ref(true) // Set to true for debugging
 const contextMenu = ref({ show: false, x: 0, y: 0, type: '', deckType: '' })
@@ -273,7 +279,6 @@ const getNumberOfPlayerCSSClass = computed(() => {
   return 'boardFor' + gameState.value.players.length
 })
 
-
 const nextPlayer = computed(() => {
   if (!gameState.value.players || gameState.value.players.length === 0) return null
   const nextIndex = (gameState.value.currentTurn + 1) % gameState.value.players.length
@@ -309,7 +314,6 @@ onUnmounted(() => {
     realtimeStore.cleanupSubscription(`room-${props.roomCode}`)
   }
 })
-
 
 function setupRealtimeUpdates() {
   console.log('🔄 Setting up realtime game updates')
@@ -355,7 +359,7 @@ function setupRealtimeUpdates() {
 // Functions
 function buildCardDetailsMap() {
   const map = {}
-  mainDeck.forEach(card => {
+  mainDeck.value.forEach(card => {
     map[card.id] = card
   })
   cardDetailsMap.value = map
@@ -368,6 +372,14 @@ function getCardDetails(cardId) {
     type: 'main',
     description: 'Card details not found'
   }
+}
+
+function onCardDrop(event, index){
+  console.log('onCardDrop', event, index)
+}
+
+function onCardDragStart(event, index) {
+  console.log('onCardDragStart',event, index)
 }
 
 async function loadGameState() {
@@ -779,7 +791,6 @@ function addLog(message, type = 'info') {
 }
 
 
-
 // Visual notification for realtime updates
 function showRealtimeNotification(message) {
   const notification = document.createElement('div')
@@ -792,6 +803,7 @@ function showRealtimeNotification(message) {
     setTimeout(() => notification.remove(), 300)
   }, 2000)
 }
+
 
 async function saveGameStateToDb() {
   try {
@@ -927,6 +939,43 @@ async function repositionFieldCard(cardId, newPosition) {
 function handleCardMouseEnter(card){
   
 }
+
+const list = ref([
+      {
+        name: 'Project Planning',
+        tasks: [
+          {
+            name: 'Create timeline',
+            tasks: [],  // Level 2 tasks won't be draggable
+          },
+          {
+            name: 'Assign resources',
+            tasks: [],  // Level 2 tasks won't be draggable
+          },
+        ],
+      },
+      {
+        name: 'Development',
+        tasks: [
+          {
+            name: 'Setup environment',
+            tasks: [],  // Level 2 tasks won't be draggable
+          },
+          {
+            name: 'Write code',
+            tasks: [
+              // Even if we add tasks here, they won't be rendered
+              // because we limit to 2 levels
+            ],
+          },
+        ],
+      },
+      {
+        name: 'Testing',
+        tasks: [],  // No subtasks
+      },
+    ])
+
 
 </script>
 
@@ -1506,6 +1555,7 @@ function handleCardMouseEnter(card){
 .players-board-container {
   display: grid;
   width: 100%;
+  grid-template-rows: 1fr 1fr;
 }
 
 .players-board-container.boardFor3 {

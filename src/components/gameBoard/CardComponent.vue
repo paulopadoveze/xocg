@@ -104,7 +104,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useTippy } from 'vue-tippy'
-import { useGameStore } from '../stores/gameStore'
+import { useGameStore } from '../../stores/gameStore'
 
 const props = defineProps({
   cardId: {
