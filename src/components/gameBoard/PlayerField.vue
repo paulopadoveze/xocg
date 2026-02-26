@@ -7,6 +7,7 @@
       :list="cardsList"
       :group="{ name: 'field' }"
       item-key="cardId"
+      @change="onDragChange"
     >
       <li class="field-item" v-for="card in cardsList">
         <CardComponent
@@ -34,10 +35,14 @@ const props = defineProps({
   cards: {
     required: true,
     type: Array
+  },
+  fieldId: {
+    type: [String, Number],
+    default: null
   }
 })
 
-const emit = defineEmits(['dragstart'])
+const emit = defineEmits(['dragstart', 'field-change', 'update:cards'])
 
 // ensure every card entry has a nested `cards` array (recursive)
 function normalizeCards(list) {
@@ -56,6 +61,12 @@ const cardsList = computed({
     // e.g. emit('update:cards', val)
   }
 })
+
+function onDragChange(evt) {
+  const payload = { fieldId: props.fieldId, cards: cardsList.value }
+  emit('field-change', payload)
+  emit('update:cards', cardsList.value)
+}
 
 const Draggable = VueDraggableNext
 const NestedDraggable = defineAsyncComponent(() => import('./PlayerField.vue'))

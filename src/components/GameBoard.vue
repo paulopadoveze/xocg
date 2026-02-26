@@ -25,17 +25,11 @@
                 @dragover.prevent
                 @drop="onCardDrop($event, playerState.id, 'field')"
               >
-                <PlayerField :cards="playerState.field" />
-                <div v-for="card in playerState.field">
-                    <CardComponent 
-                      :key="card.id"
-                      :card-id="card.cardId"
-                      draggable
-                      @dragstart="onCardDragStart($event, card.cardId, playerState.id, 'field')"
-                      @dragend="onCardDragEnd"
-                      @double-click="playCard(card.cardId)"
-                    />
-                </div>
+                <PlayerField
+                  :cards="playerState.field"
+                  :field-id="playerState.id"
+                  @update:cards="onPlayerFieldUpdate(playerState.id, $event)"
+                />
               </div>
               <div class="opponentHand">
                 <div class="opponentCard" v-for="card in playerState.hand">
@@ -44,19 +38,11 @@
               </div>
             </div>
             <div class="playerBoard" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
-              <PlayerField :cards="playerState.field" />
-              <div class="playerField">
-                <CardComponent 
-                  v-for="card in playerState.field"
-                  :key="card.cardId"
-                  :card-id="card.cardId"
-                  draggable
-                  @drag="onCardDragStart($event, cardId)"
-                  @dragend="onCardDrop($event, 1)"
-                  @double-click="tapCard(cardId)"
-                />
-                
-              </div>
+              <PlayerField
+                :cards="playerState.field"
+                :field-id="playerState.id"
+                @update:cards="onPlayerFieldUpdate(playerState.id, $event)"
+              />
               <!-- Player's Hand -->
               <div class="gameHand">
                 <div class="game-hand__cards">
@@ -376,6 +362,23 @@ function getCardDetails(cardId) {
 
 function onCardDrop(event, index){
   console.log('onCardDrop', event, index)
+}
+
+// Handle updates from PlayerField component when cards change
+async function onPlayerFieldUpdate(playerIdParam, newCards) {
+  try {
+    const player = gameState.value.players.find(p => p.id === playerIdParam)
+    if (!player) {
+      console.warn('Player not found for field update:', playerIdParam)
+      return
+    }
+
+    player.field = newCards
+    addLog(`${player.name} field updated`, 'system')
+    await saveGameStateToDb()
+  } catch (err) {
+    console.error('Error updating player field:', err)
+  }
 }
 
 function onCardDragStart(event, index) {
