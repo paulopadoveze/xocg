@@ -21,21 +21,14 @@
           <div v-for="playerState in gameState.players">      
 
             <div class="playerBoard" v-if="currentPlayer.id !== playerState.id" :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
-              <div class="playerField"
-                @dragover.prevent
-                @drop="onCardDrop($event, playerState.id, 'field')"
-              >
+              <div class="playerField">
                 <PlayerField
                   :cards="playerState.field"
                   :field-id="playerState.id"
                   @update:cards="onPlayerFieldUpdate(playerState.id, $event)"
                 />
               </div>
-              <div class="opponentHand">
-                <div class="opponentCard" v-for="card in playerState.hand">
-                  <IconXorume />
-                </div>
-              </div>
+              <PlayerHand :cards="playerState.hand" :opponent="true" />
             </div>
             <div class="playerBoard" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
               <PlayerField
@@ -44,18 +37,7 @@
                 @update:cards="onPlayerFieldUpdate(playerState.id, $event)"
               />
               <!-- Player's Hand -->
-              <div class="gameHand">
-                <div class="game-hand__cards">
-                  <CardComponent 
-                    v-for="cardId in playerHand"
-                    :key="cardId"
-                    :card-id="cardId"
-                    draggable
-                    @drag-start="onCardDragStart($event, cardId)"
-                    @double-click="playCard(cardId)"
-                  />
-                </div>
-              </div>
+              <PlayerHand :cards="playerHand" @play-card="playCard" />
 
             </div>
             
@@ -79,7 +61,10 @@
         />
       </div>
       <div class="gameGarbage">
-        
+        <GarbageComponent
+          :cards="gameState.garbage"
+          @play="playCardFromGarbage"
+        />
       </div>
 
       <div class="game-players">
@@ -171,7 +156,6 @@ import { useRealtimeStore } from '../stores/realtimeStore.js'
 import { useGameStore } from '../stores/gameStore.js'
 import { storeToRefs } from 'pinia'
 import { v4 as uuidv4 } from 'uuid'
-import draggable from 'vuedraggable'
 
 import IconXorume from '../assets/icons/IconXorume.vue'
 
@@ -180,6 +164,8 @@ import DeckComponent from './DeckComponent.vue'
 import ArrowRenderer from './ArrowRenderer.vue'
 
 import PlayerField from './gameBoard/PlayerField.vue'
+import PlayerHand from './gameBoard/PlayerHand.vue'
+import GarbageComponent from './gameBoard/GarbageComponent.vue'
 import GameLog from './GameLog.vue'
 
 
@@ -226,7 +212,6 @@ const error = ref('')
 
 const showDebug = ref(true) // Set to true for debugging
 const contextMenu = ref({ show: false, x: 0, y: 0, type: '', deckType: '' })
-const draggedCard = ref(null)
 const highlightTimer = ref(null)
 const subscription = ref(null)
 
@@ -360,8 +345,126 @@ function getCardDetails(cardId) {
   }
 }
 
-function onCardDrop(event, index){
-  console.log('onCardDrop', event, index)
+// handle a card dropped from hand into a specific location in a player's field
+async function onCardDropFromHand({ targetField, targetIdx, targetCardIdx, card }) {
+  const player = gameState.value.players.find(p => p.id === targetField)
+  if (!player) return
+
+  // remove from hand if present
+  player.hand = player.hand.filter(id => id !== card.cardId)
+
+  // decide where to insert
+  if (targetIdx != null) {
+    if (targetCardIdx === null) {
+      // stack under target card
+      const targetCard = player.field[targetIdx]
+      if (!targetCard.cards) targetCard.cards = []
+      targetCard.cards.push({ cardId: card.cardId, cards: [] })
+    } else {
+      // stack under a stacked card (shouldn't go deeper but handle gracefully)
+      const parentCard = player.field[targetIdx]
+      const targetStackCard = parentCard?.cards?.[targetCardIdx]
+      if (targetStackCard) {
+        if (!targetStackCard.cards) targetStackCard.cards = []
+        targetStackCard.cards.push({ cardId: card.cardId, cards: [] })
+      } else {
+        // fallback: append to main field
+        player.field.push({ cardId: card.cardId, cards: [] })
+      }
+    }
+  } else {
+    player.field.push({ cardId: card.cardId, cards: [] })
+  }
+
+  addLog(`${player.name} moved card ${card.cardId} from hand to field`, 'system')
+  await saveGameStateToDb()
+}
+
+// handle a card dropped from another field into a player's field
+async function onCardDropFromField({ sourceField, sourceIdx, stackIdx, cardIdx, targetField, targetIdx, targetCardIdx, card }) {
+  const targetPlayer = gameState.value.players.find(p => p.id === targetField)
+  const sourcePlayer = gameState.value.players.find(p => p.id === sourceField)
+  
+  if (!targetPlayer || !sourcePlayer) return
+
+  // remove from source (either top-level or inside a stack)
+  if (typeof stackIdx === 'number' && typeof cardIdx === 'number') {
+    const sourceStack = sourcePlayer.field[stackIdx]
+    if (sourceStack && sourceStack.cards && sourceStack.cards[cardIdx]) {
+      sourceStack.cards.splice(cardIdx, 1)
+      if (sourceStack.cards.length === 0) {
+        // no extra action
+      }
+    }
+  } else if (sourcePlayer.field[sourceIdx]) {
+    // if we're moving a full stack, also drop its flat children entries
+    const moving = sourcePlayer.field[sourceIdx]
+    if (moving && moving.cards && moving.cards.length) {
+      const parentId = moving.cardId
+      // remove any flat entries referencing this card
+      for (let i = sourcePlayer.field.length - 1; i >= 0; i--) {
+        if (sourcePlayer.field[i].isStackedOn === parentId) {
+          sourcePlayer.field.splice(i, 1)
+        }
+      }
+    }
+    sourcePlayer.field.splice(sourceIdx, 1)
+  }
+
+  // add to target field (avoid stacking if card was from stack or has children)
+  const cannotStack = card?.fromStack || (card && card.cards && card.cards.length)
+  // helper to insert flat entries from a nested card
+  function insertFlat(cardObj, idx) {
+    // add main card entry
+    const entry = { ...cardObj }
+    delete entry.cards
+    entry.isTapped = entry.isTapped || false
+    entry.position = entry.position != null ? entry.position : (targetPlayer.field.length)
+    entry.isStackedOn = null
+    if (idx != null) targetPlayer.field.splice(idx, 0, entry)
+    else targetPlayer.field.push(entry)
+    // add children if any
+    if (Array.isArray(cardObj.cards)) {
+      for (const child of cardObj.cards) {
+        if (!child) continue
+        const childEntry = { ...(typeof child === 'object' ? { ...child } : { cardId: child }) }
+        childEntry.isTapped = childEntry.isTapped || false
+        childEntry.position = entry.position
+        childEntry.isStackedOn = entry.cardId
+        delete childEntry.cards
+        if (idx != null) targetPlayer.field.splice(idx + 1, 0, childEntry)
+        else targetPlayer.field.push(childEntry)
+      }
+    }
+  }
+  if (targetIdx != null) {
+    if (cannotStack) {
+      // insert flattened card at position
+      insertFlat(card, targetIdx)
+    } else if (targetCardIdx === null) {
+      // stack under target card
+      const targetCard = targetPlayer.field[targetIdx]
+      if (!targetCard.cards) targetCard.cards = []
+      targetCard.cards.push(card)
+    } else {
+      // stack under a stacked card
+      const parentCard = targetPlayer.field[targetIdx]
+      const targetStackCard = parentCard?.cards?.[targetCardIdx]
+      if (targetStackCard) {
+        if (!targetStackCard.cards) targetStackCard.cards = []
+        targetStackCard.cards.push(card)
+      } else {
+        // fallback: append to main field
+        insertFlat(card)
+      }
+    }
+  } else {
+    // add to main field
+    insertFlat(card)
+  }
+
+  addLog(`Card moved from ${sourcePlayer.name}'s field to ${targetPlayer.name}'s field`, 'system')
+  await saveGameStateToDb()
 }
 
 // Handle updates from PlayerField component when cards change
@@ -373,16 +476,45 @@ async function onPlayerFieldUpdate(playerIdParam, newCards) {
       return
     }
 
-    player.field = newCards
+    // Convert nested stack representation ({ cardId, cards: [...] })
+    // into flat field entries the game state expects ({ cardId, isTapped, position, isStackedOn })
+    const flatField = []
+    for (let i = 0; i < (Array.isArray(newCards) ? newCards.length : 0); i++) {
+      const item = newCards[i]
+      if (!item) continue
+      // main/top-level card
+      const mainCard = {
+        ...(typeof item === 'object' ? { ...item } : { cardId: item }),
+        isTapped: item.isTapped || false,
+        position: item.position != null ? item.position : flatField.length,
+        isStackedOn: null
+      }
+      // ensure we don't keep nested 'cards' array in the flat model
+      delete mainCard.cards
+      flatField.push(mainCard)
+
+      // children (stacked cards) — single-level only
+      if (Array.isArray(item.cards) && item.cards.length) {
+        for (const child of item.cards) {
+          if (!child) continue
+          const childEntry = {
+            ...(typeof child === 'object' ? { ...child } : { cardId: child }),
+            isTapped: child.isTapped || false,
+            position: mainCard.position,
+            isStackedOn: mainCard.cardId
+          }
+          delete childEntry.cards
+          flatField.push(childEntry)
+        }
+      }
+    }
+
+    player.field = flatField
     addLog(`${player.name} field updated`, 'system')
     await saveGameStateToDb()
   } catch (err) {
     console.error('Error updating player field:', err)
   }
-}
-
-function onCardDragStart(event, index) {
-  console.log('onCardDragStart',event, index)
 }
 
 async function loadGameState() {
@@ -695,6 +827,10 @@ async function takeFromGarbage(cardId) {
   addLog(`${currentPlayer.value.name} took ${cardDetails.name} from garbage`)
   
   await saveGameStateToDb()
+}
+
+async function playCardFromGarbage(cardId) {
+  await takeFromGarbage(cardId)
 }
 
 function peekDeck(deckType, count = 5) {
@@ -1456,6 +1592,9 @@ const list = ref([
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  min-width: 300px;
+  height: 100px;
+  background-color: #0d0d13;
 }
 
 .game-hand__count {

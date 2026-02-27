@@ -14,13 +14,10 @@
           'card--rotated': card.rotated,
           'card--highlighted': card.highlighted,
           'card--selected': card.selected,
-          'card--draggable': draggable,
           'card--interactive': true,
         },
         getCardSubtypeClass(card.subtype)
       ]"
-      :draggable="draggable"
-      @dragstart="handleDragStart"
       @dblclick="handleDoubleClick"
       @contextmenu="handleContextMenu"
       @mousedown="handleMouseDown"
@@ -110,15 +107,10 @@ const props = defineProps({
   cardId: {
     type: [Number, String],
     required: true
-  },
-  draggable: {
-    type: Boolean,
-    default: true
   }
 })
 
 const emit = defineEmits([
-  'drag-start',
   'double-click',
   'contextmenu',
   'mouse-down',
@@ -139,23 +131,6 @@ const card = computed(() => {
 const imageSrc = computed(() => 
   card.value?.img ? new URL(`../assets/cardImages/${card.value.img}`, import.meta.url).href : ''
 )
-
-const isDragging = ref(false)
-
-const handleDragStart = (event) => {
-  isDragging.value = true
-  if (event.dataTransfer) {
-    const dragImage = new Image()
-    dragImage.src = `data:image/svg+xml;base64,${btoa(`
-      <svg width="100" height="150" xmlns="http://www.w3.org/2000/svg">
-        <rect width="100" height="150" rx="8" fill="#1a1a24" stroke="#8b5cf6" stroke-width="2"/>
-        <text x="50" y="30" text-anchor="middle" fill="#f8fafc" font-size="12">${card.value?.name}</text>
-      </svg>
-    `)}`
-    event.dataTransfer.setDragImage(dragImage, 50, 75)
-  }
-  emit('drag-start', event)
-}
 
 const cardContent = ref()
 
@@ -301,14 +276,6 @@ const handleBlur = () => {
       0 10px 30px rgba(0, 0, 0, 0.5);
   }
   
-  &--draggable {
-    cursor: grab;
-    
-    &:active {
-      cursor: grabbing;
-    }
-  }
-
   &.-large {
     width:15rem;
   }
@@ -522,24 +489,6 @@ const handleBlur = () => {
     }
   }
   
-  &__drag-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(139, 92, 246, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: inherit;
-    z-index: 100;
-    
-    .card__drag-icon {
-      font-size: 2rem;
-      opacity: 0.8;
-    }
-  }
 }
 
 // Animations
