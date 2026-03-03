@@ -1,9 +1,11 @@
 <template>
   <div class="relative">
     <div
+      :class="{ 'garbage--drag-over': isDragOver }"
       @contextmenu.prevent="showContextMenu($event)"
-      @dragover.prevent
-      @drop="onDrop"
+      @dragover.prevent="onDragOver"
+      @dragleave="onDragLeave"
+      @drop.prevent="onDrop"
     >
       <div class="numberOfCards">
         {{ count }} cards
@@ -27,7 +29,12 @@
           class="absolute z-10"
           :style="{ transform: 'rotate(-2deg)' }"
         >
-          <CardComponent :card-id="topCardId" />
+          <CardComponent 
+            :card-id="topCardId" 
+            :drag-meta="{ source: 'garbage' }"
+            @drag-start="(payload) => $emit('drag-start', payload)"
+            @drag-end="$emit('drag-end')"
+          />
         </div>
 
         <!-- Empty garbage indicator -->
@@ -132,9 +139,10 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['play', 'take-top'])
+const emit = defineEmits(['play', 'take-top', 'drop-card', 'drag-start', 'drag-end'])
 
 const showModal = ref(false)
+const isDragOver = ref(false)
 
 const contextMenu = ref({
   visible: false,
@@ -181,11 +189,27 @@ const handlePlayCard = (cardId) => {
   showModal.value = false
 }
 
+function onDragOver(event) {
+  isDragOver.value = true
+  event.dataTransfer.dropEffect = 'move'
+}
+
+function onDragLeave(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    isDragOver.value = false
+  }
+}
+
 const onDrop = (event) => {
-  event.preventDefault()
-  const cardId = event.dataTransfer.getData('text/plain')
-  if (cardId) {
-    console.log('Card dropped on garbage:', cardId)
+  isDragOver.value = false
+  const raw = event.dataTransfer.getData('application/xcg-card')
+  if (!raw) return
+  try {
+    const payload = JSON.parse(raw)
+    // Emit to parent (GameBoard) — parent handles all state logic
+    emit('drop-card', { ...payload, target: 'garbage' })
+  } catch (e) {
+    console.warn('GarbageComponent: invalid drag payload', e)
   }
 }
 
@@ -205,6 +229,12 @@ onUnmounted(() => {
 <style scoped>
 .numberOfCards {
   font-size: 12px;
+}
+
+.garbage--drag-over {
+  outline: 2px dashed rgba(255, 100, 100, 0.7);
+  border-radius: 8px;
+  background: rgba(255, 100, 100, 0.08);
 }
 
 .garbage-modal__cards {

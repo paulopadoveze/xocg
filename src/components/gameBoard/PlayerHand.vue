@@ -11,23 +11,34 @@
   </div>
 
   <!-- Player's own hand: face-up cards -->
-  <div v-else class="gameHand">
+  <div
+    v-else
+    class="gameHand"
+    :class="{ 'gameHand--drag-over': isDragOver }"
+    @dragover.prevent="onDragOver"
+    @dragleave="onDragLeave"
+    @drop.prevent="onDrop"
+  >
     <div class="game-hand__cards">
       <CardComponent
         v-for="cardId in cards"
         :key="cardId"
         :card-id="cardId"
+        :drag-meta="{ source: 'hand', sourcePlayerId: playerId }"
         @double-click="$emit('play-card', cardId)"
+        @drag-start="(payload) => $emit('drag-start', payload)"
+        @drag-end="$emit('drag-end')"
       />
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import CardComponent from './CardComponent.vue'
 import IconXorume from '../../assets/icons/IconXorume.vue'
 
-defineProps({
+const props = defineProps({
   /** Array of card IDs (own hand) or any truthy array (opponent hand, shown face-down) */
   cards: {
     type: Array,
@@ -37,10 +48,39 @@ defineProps({
   opponent: {
     type: Boolean,
     default: false
+  },
+  /** Current player's ID — injected by GameBoard so drag metadata is complete */
+  playerId: {
+    type: [String, Number],
+    default: null
   }
 })
 
-defineEmits(['play-card'])
+const emit = defineEmits(['play-card', 'drag-start', 'drag-end', 'drop-card'])
+
+const isDragOver = ref(false)
+
+function onDragOver(event) {
+  isDragOver.value = true
+  event.dataTransfer.dropEffect = 'move'
+}
+
+function onDragLeave() {
+  isDragOver.value = false
+}
+
+function onDrop(event) {
+  isDragOver.value = false
+  const raw = event.dataTransfer.getData('application/xcg-card')
+  if (!raw) return
+  try {
+    const payload = JSON.parse(raw)
+    // Emit to parent (GameBoard) — parent handles all state logic
+    emit('drop-card', { ...payload, target: 'hand' })
+  } catch (e) {
+    console.warn('PlayerHand: invalid drag payload', e)
+  }
+}
 </script>
 
 <style scoped>
@@ -50,6 +90,13 @@ defineEmits(['play-card'])
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  transition: background 0.2s ease;
+}
+
+.gameHand--drag-over {
+  background: rgba(100, 200, 100, 0.15);
+  outline: 2px dashed rgba(100, 200, 100, 0.6);
+  border-radius: 8px;
 }
 
 .game-hand__cards {

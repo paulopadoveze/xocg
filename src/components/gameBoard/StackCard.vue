@@ -4,13 +4,19 @@
     :class="{
       'stack-card--expanded': isExpanded,
       'stack-card--has-stack': hasStack,
+      'stack-card--drag-over': isDragOver,
     }"
+    @dragover.prevent="onDragOver"
+    @dragleave="onDragLeave"
+    @drop.prevent="onDrop"
   >
+
     <!-- Main (bottom) card -->
     <div class="stack-card__main" @click="toggleExpand">
       <CardComponent
         :card-id="cardId"
         class="stack-card__base"
+        :drag-meta="baseDragMeta"
         v-bind="$attrs"
         @double-click="$emit('double-click', cardId, $event)"
         @contextmenu="$emit('contextmenu', cardId, $event)"
@@ -18,6 +24,8 @@
         @mouse-up="$emit('mouse-up', cardId, $event)"
         @mouse-enter="$emit('mouse-enter', cardId, $event)"
         @mouse-leave="$emit('mouse-leave', cardId, $event)"
+        @drag-start="handleDragStart"
+        @drag-end="$emit('drag-end')"
       />
 
       <!-- Stack count badge -->
@@ -57,10 +65,12 @@
           <CardComponent
             :card-id="stacked.cardId"
             class="stack-card__stacked-card"
+            :drag-meta="stackedDragMeta(idx)"
             @double-click="$emit('stacked-double-click', stacked.cardId, idx, $event)"
             @contextmenu="$emit('stacked-contextmenu', stacked.cardId, idx, $event)"
             @mouse-enter="$emit('stacked-mouse-enter', stacked.cardId, idx, $event)"
             @mouse-leave="$emit('stacked-mouse-leave', stacked.cardId, idx, $event)"
+            @drag-end="$emit('drag-end')"
           />
         </div>
       </div>
@@ -76,9 +86,11 @@ import CardComponent from './CardComponent.vue'
  * StackCard — displays a base card with an optional stack of cards on top.
  *
  * Props:
- *   cardId       — ID of the base (bottom) card
- *   stackedCards — array of { cardId } objects representing cards stacked on top
- *   expanded     — optional controlled expanded state (use with onUpdate:expanded)
+ *   cardId         — ID of the base (bottom) card
+ *   stackedCards   — array of { cardId } objects representing cards stacked on top
+ *   expanded       — optional controlled expanded state (use with onUpdate:expanded)
+ *   stackIdx       — index of this stack in the parent field (for drag metadata)
+ *   fieldId        — ID of the player field this stack belongs to (for drag metadata)
  *
  * Emits:
  *   toggle-expand(isExpanded)
@@ -93,6 +105,9 @@ import CardComponent from './CardComponent.vue'
  *   stacked-contextmenu(cardId, stackIndex, event)
  *   stacked-mouse-enter(cardId, stackIndex, event)
  *   stacked-mouse-leave(cardId, stackIndex, event)
+ *   drag-start(payload)
+ *   drag-end()
+ *   drop-on-stack(payload)   — card dropped onto this stack
  */
 
 const props = defineProps({
@@ -125,6 +140,16 @@ const props = defineProps({
     type: Number,
     default: 8,
   },
+  /** Index of this stack in the parent PlayerField (used for drag metadata) */
+  stackIdx: {
+    type: Number,
+    default: null,
+  },
+  /** Player field ID this stack belongs to (used for drag metadata) */
+  fieldId: {
+    type: [String, Number],
+    default: null,
+  },
 })
 
 const emit = defineEmits([
@@ -140,10 +165,14 @@ const emit = defineEmits([
   'stacked-contextmenu',
   'stacked-mouse-enter',
   'stacked-mouse-leave',
+  'drag-start',
+  'drag-end',
+  'drop-on-stack',
 ])
 
 // Internal expanded state (used when `expanded` prop is null / uncontrolled)
 const internalExpanded = ref(false)
+const isDragOver = ref(false)
 
 const isExpanded = computed(() => {
   return props.expanded !== null ? props.expanded : internalExpanded.value
@@ -151,6 +180,27 @@ const isExpanded = computed(() => {
 
 const hasStack = computed(() => Array.isArray(props.stackedCards) && props.stackedCards.length > 0)
 
+/** Drag metadata for the base card */
+const baseDragMeta = computed(() => ({
+  source: 'field',
+  sourcePlayerId: props.fieldId,
+  stackIdx: props.stackIdx,
+  cardIdx: null, // null = base card of the stack
+}))
+
+/** Drag metadata for a stacked card at a given index */
+function stackedDragMeta(idx) {
+  return {
+    source: 'field',
+    sourcePlayerId: props.fieldId,
+    stackIdx: props.stackIdx,
+    cardIdx: idx, // index within the stacked cards array
+  }
+}
+
+function handleDragStart(payload) {
+  emit('drag-start', payload)
+}
 function toggleExpand() {
   if (!hasStack.value) return
   const next = !isExpanded.value
@@ -161,6 +211,43 @@ function toggleExpand() {
     internalExpanded.value = next
   }
   emit('toggle-expand', next)
+}
+
+// ── Drag-over / drop on this stack ────────────────────────────────────────────
+
+function onDragOver(event) {
+  isDragOver.value = true
+  event.dataTransfer.dropEffect = 'move'
+}
+
+function onDragLeave(event) {
+  // Only clear if leaving the stack-card root (not a child)
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    isDragOver.value = false
+  }
+}
+
+function onDrop(event) {
+  isDragOver.value = false
+  // Don't allow dropping if there's already a stack on this card
+  if (hasStack.value) {
+    return // Prevent drop onto cards that already have a stack
+  }
+  const raw = event.dataTransfer.getData('application/xcg-card')
+  if (!raw) return
+  try {
+    console.log('payload stack', raw)
+    const payload = JSON.parse(raw)
+    // Emit to parent (PlayerField → GameBoard) with target info
+    emit('drop-on-stack', {
+      ...payload,
+      target: 'stack',
+      targetStackIdx: props.stackIdx,
+      targetFieldId: props.fieldId,
+    })
+  } catch (e) {
+    console.warn('StackCard: invalid drag payload', e)
+  }
 }
 
 /**
@@ -192,6 +279,13 @@ function stackedItemStyle(idx) {
   display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
+  transition: outline 0.15s ease;
+
+  &--drag-over {
+    outline: 2px dashed rgba(100, 200, 255, 0.7);
+    border-radius: 8px;
+    background: rgba(100, 200, 255, 0.08);
+  }
 
   // ── Main card wrapper ──────────────────────────────────────────────────────
   &__main {

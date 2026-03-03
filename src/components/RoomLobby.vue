@@ -1,6 +1,5 @@
 <template>
   <div class="room-container">
-    {{playerStore}}
     <p>adminId: {{adminId}}</p>
     <div v-if="loading" class="room-loading">Carregando...</div>
     <div v-else-if="error" class="room-error">
@@ -179,7 +178,6 @@ async function loadRoom() {
     
     roomData.value = room
 
-    console.log('room rromm', room)
     players.value = room.players || []
     adminId.value = room.created_by
 
@@ -378,8 +376,6 @@ async function initializeGameState() {
     
     // Generate card IDs
     const mainCardIds = generateRandomIds(1, 100, 100)
-
-    //console.log('Starting player ID:', startingPlayerId)
     
     // Create game state
     const gameState = {

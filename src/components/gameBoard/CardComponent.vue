@@ -15,9 +15,13 @@
           'card--highlighted': card.highlighted,
           'card--selected': card.selected,
           'card--interactive': true,
+          'card--dragging': isDragging,
         },
         getCardSubtypeClass(card.subtype)
       ]"
+      :draggable="draggable"
+      @dragstart="handleDragStart"
+      @dragend="handleDragEnd"
       @dblclick="handleDoubleClick"
       @contextmenu="handleContextMenu"
       @mousedown="handleMouseDown"
@@ -107,6 +111,20 @@ const props = defineProps({
   cardId: {
     type: [Number, String],
     required: true
+  },
+  /** When true the card element is draggable */
+  draggable: {
+    type: Boolean,
+    default: true
+  },
+  /**
+   * Drag metadata injected by the parent zone.
+   * Merged into the dataTransfer JSON on dragstart.
+   * Example: { source: 'hand', sourcePlayerId: 'abc' }
+   */
+  dragMeta: {
+    type: Object,
+    default: () => ({})
   }
 })
 
@@ -118,7 +136,9 @@ const emit = defineEmits([
   'mouse-enter',
   'mouse-leave',
   'focus',
-  'blur'
+  'blur',
+  'drag-start',
+  'drag-end',
 ])
 
 const gameStore = useGameStore()
@@ -133,6 +153,7 @@ const imageSrc = computed(() =>
 )
 
 const cardContent = ref()
+const isDragging = ref(false)
 
 function getCardSubtypeClass(type) {
   if(type=="Substituto"){
@@ -152,6 +173,24 @@ function getCardSubtypeClass(type) {
   }
 
   return 'type-none'
+}
+
+const handleDragStart = (event) => {
+  isDragging.value = true
+  const payload = {
+    cardId: props.cardId,
+    ...props.dragMeta
+  }
+  event.dataTransfer.effectAllowed = 'move'
+  event.dataTransfer.setData('application/xcg-card', JSON.stringify(payload))
+  // Also set plain text for legacy drop targets
+  event.dataTransfer.setData('text/plain', String(props.cardId))
+  emit('drag-start', payload, event)
+}
+
+const handleDragEnd = (event) => {
+  isDragging.value = false
+  emit('drag-end', event)
 }
 
 const handleDoubleClick = (event) => {
@@ -203,11 +242,16 @@ const handleBlur = () => {
   background: linear-gradient(145deg, var(--bgCard) 0%, #202020 80%);
   border: 1px solid color-mix(in srgb, var(--bgCard), #121212);
   border-radius: 8px;
-  cursor: pointer;
+  cursor: grab;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   overflow: hidden;
   outline: none;
+
+  &--dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
   
   &.type-substitute {
     --bgCard: red

@@ -2,10 +2,12 @@
   <div class="relative">
     <div 
       class=""
+      :class="{ 'deck--drag-over': isDragOver }"
       @dblclick="$emit('draw')"
       @contextmenu.prevent="showContextMenu($event)"
-      @dragover.prevent
-      @drop="onDrop"
+      @dragover.prevent="onDragOver"
+      @dragleave="onDragLeave"
+      @drop.prevent="onDrop"
     >
       <div class="numberOfCards">
           {{ count }} cards
@@ -102,7 +104,9 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['draw', 'peek', 'shuffle', 'count'])
+const emit = defineEmits(['draw', 'peek', 'shuffle', 'count', 'drop-card'])
+
+const isDragOver = ref(false)
 
 const contextMenu = ref({
   visible: false,
@@ -137,18 +141,27 @@ const handleShuffle = () => {
   contextMenu.value.visible = false
 }
 
-const handleCount = () => {
-  emit('count')
-  contextMenu.value.visible = false
+function onDragOver(event) {
+  isDragOver.value = true
+  event.dataTransfer.dropEffect = 'move'
+}
+
+function onDragLeave(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    isDragOver.value = false
+  }
 }
 
 const onDrop = (event) => {
-  event.preventDefault()
-  const cardId = event.dataTransfer.getData('text/plain')
-  if (cardId) {
-    // Handle card being dropped on deck (returning to deck)
-    // You might want to emit a different event here
-    console.log('Card dropped on deck:', cardId)
+  isDragOver.value = false
+  const raw = event.dataTransfer.getData('application/xcg-card')
+  if (!raw) return
+  try {
+    const payload = JSON.parse(raw)
+    // Emit to parent (GameBoard) — parent handles all state logic
+    emit('drop-card', { ...payload, target: 'deck', deckType: props.deckType })
+  } catch (e) {
+    console.warn('DeckComponent: invalid drag payload', e)
   }
 }
 
@@ -169,5 +182,11 @@ onUnmounted(() => {
 <style scoped>
   .numberOfCards {
     font-size: 12px;
+  }
+
+  .deck--drag-over {
+    outline: 2px dashed rgba(100, 200, 100, 0.7);
+    border-radius: 8px;
+    background: rgba(100, 200, 100, 0.08);
   }
 </style>
