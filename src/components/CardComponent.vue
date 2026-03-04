@@ -310,6 +310,9 @@ const handleBlur = () => {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: "Combo", system-ui;
+    font-weight: 400;
+    font-style: normal;
   }
 
   &__power {
@@ -335,8 +338,6 @@ const handleBlur = () => {
   
   &__artwork {
     background: black;
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 0% 100%);
-    clip-path: circle(100.0% at 50% 0);
     overflow: hidden;
     position: absolute;
     top: 0;
@@ -344,6 +345,7 @@ const handleBlur = () => {
     bottom: 35%;
     right: 0;
     z-index: 1;
+
   }
   
   &__artwork-placeholder {

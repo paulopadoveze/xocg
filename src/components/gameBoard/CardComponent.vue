@@ -9,7 +9,7 @@
   >
     <div
       :class="[
-        'card',
+        'card -small',
         {
           'card--rotated': card.rotated,
           'card--highlighted': card.highlighted,
@@ -59,19 +59,16 @@
           </div>
         </div>
         
-        <div class="card__footer">
+        <div class="card__footer" style="display: none;">
           <div v-if="card.rarity" class="card__rarity" :class="`card__rarity--${card.rarity}`">
             {{ card.rarity.charAt(0).toUpperCase() }}
           </div>
         </div>
       </div>
-      
       <div class="card__glow" :class="{ 'card__glow--active': card.highlighted }"></div>
-      
     </div>
 
     <template #content>
-      
       <div class="card -large" :class="getCardSubtypeClass(card.subtype)">
         <div class="card__content">
           <div class="card__artwork">
@@ -90,7 +87,7 @@
             </div>
           </div>
           
-          <div class="card__footer">
+          <div class="card__footer" style="display: none;">
            
             <div v-if="card.rarity" class="card__rarity" :class="`card__rarity--${card.rarity}`">
               {{ card.rarity.charAt(0).toUpperCase() }}
@@ -148,8 +145,8 @@ const card = computed(() => {
   return gameStore.mainDeck.find(c => c.id === id) || {}
 })
 
-const imageSrc = computed(() => 
-  card.value?.img ? new URL(`../assets/cardImages/${card.value.img}`, import.meta.url).href : ''
+const imageSrc = computed(() =>
+  card.value?.img ? new URL(`../../assets/cardImages/${card.value.img}`, import.meta.url).href : ''
 )
 
 const cardContent = ref()
@@ -235,13 +232,13 @@ const handleBlur = () => {
 }
 // Card styles
 .card {
+  --cardSize: 1;
   --bgCard: #595959;
   position: relative;
   width: 7rem;
   aspect-ratio: 6/8.5;
-  background: linear-gradient(145deg, var(--bgCard) 0%, #202020 80%);
-  border: 1px solid color-mix(in srgb, var(--bgCard), #121212);
-  border-radius: 8px;
+  background: var(--bgCard);
+  border-radius: calc(var(--cardSize) * 8px);
   cursor: grab;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
@@ -320,7 +317,12 @@ const handleBlur = () => {
       0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
+  &.-small {
+    --cardSize: 0.5;
+  }
+
   &.-large {
+    --cardSize: 1;
     width:15rem;
   }
   
@@ -333,7 +335,8 @@ const handleBlur = () => {
   }
   
   &__header {
-    background: linear-gradient(145deg, color-mix(in srgb, var(--bgCard),#121212),  #121212 );
+    background: white;
+    border: calc(var(--cardSize) * 4px) solid black;
     display: flex;
     justify-content: space-between;
     align-items: stretch;
@@ -344,11 +347,11 @@ const handleBlur = () => {
   }
   
   &__name {
-    padding: 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.25rem;
+    letter-spacing: -1px;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--color-text-primary);
-    text-shadow: 1px 1px 0 color-mix(in srgb, var(--bgCard),#000);
+    color: black;
     margin: 0;
     line-height: 1.2;
     flex: 1;
@@ -357,13 +360,13 @@ const handleBlur = () => {
   }
 
   &__power {
-    background:radial-gradient(circle,rgba(247, 107, 32, 1) 0%, rgba(253, 29, 29, 1) 100%);
+    background: #dc3a15;
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     text-align: center;
     width: 2rem;
-    border-radius: 4px;
+    border: calc(var(--cardSize) * 4px) solid black;
   }
   
   &__cost {
@@ -379,15 +382,14 @@ const handleBlur = () => {
   
   &__artwork {
     background: black;
-    clip-path: polygon(0 0, 100% 0, 100% 80%, 0% 100%);
-    clip-path: circle(100.0% at 50% 0);
     overflow: hidden;
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 35%;
-    right: 0;
+    top: 0.5rem;
+    left: 0.5rem;
+    bottom: 45%;
+    right: .5rem;
     z-index: 1;
+    border: calc(var(--cardSize) * 4px) solid black;
   }
   
   &__artwork-placeholder {
@@ -406,24 +408,24 @@ const handleBlur = () => {
     flex-direction: column;
     position: relative;
     z-index: 3;
-    margin-top: 50%;
+    margin-top: 52%;
   }
   
   &__description {
-    background: linear-gradient(145deg, color-mix(in srgb, var(--bgCard),#121212),  #121212 );
+    background:white;
     mix-blend-mode: overlay;
     font-size: 0.625rem;
-    color: var(--color-text-secondary);
+    color: black;
     line-height: 1.3;
     margin-bottom: 0.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 1rem 1rem;
-    margin: -.5rem .5rem 0.5rem;
+    padding: 0.75rem 0.6rem;
+    margin: 0 .5rem 0.5rem;
     height: 100%;
     font-size: 0.8rem;
-    line-height: 1.5;
-    border: 1px solid color-mix(in srgb, var(--bgCard),#555);
+    line-height: 1.3;
+    border: calc(var(--cardSize) * 4px) solid black;
   }
   
   &__stats {
@@ -437,9 +439,7 @@ const handleBlur = () => {
     font-weight: 600;
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
-    
-
-    
+        
     &--health {
       background: rgba(0, 255, 136, 0.1);
       color: var(--color-success);
@@ -457,55 +457,19 @@ const handleBlur = () => {
   
   &__type {
     background: color-mix(in srgb, var(--bgCard),#404040);
-    border-radius: 100px;
-    font-size: 0.5625rem;
-    padding: 0.2rem;
-    margin: 0 1rem;
+
+    font-weight: 700;
+    font-size: 0.75rem;
+
+    margin: 0 1.5rem -0.5rem;
     text-align: center;
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     z-index: 2;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: calc(var(--cardSize) * 4px) solid black;
   }
-  
-  &__rarity {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    width: 1rem;
-    height: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 1px solid;
     
-    &--common {
-      color: var(--color-text-muted);
-      border-color: var(--color-text-muted);
-    }
-    
-    &--uncommon {
-      color: var(--color-success);
-      border-color: var(--color-success);
-    }
-    
-    &--rare {
-      color: var(--color-primary);
-      border-color: var(--color-primary);
-    }
-    
-    &--epic {
-      color: var(--color-accent);
-      border-color: var(--color-accent);
-    }
-    
-    &--legendary {
-      color: var(--color-warning);
-      border-color: var(--color-warning);
-    }
-  }
-  
   &__glow {
     position: absolute;
     top: 0;

@@ -6,7 +6,8 @@ export const mainDeck = [
     "type": null,
     "power": 4,
     "ability": "Mendigo Alpha: quando atacar pela mão, ganha +2 de Força nesta disputa.",
-    "isKing": true
+    "isKing": true,
+    "img": '1.png'
   },
   {
     "id": 2,
@@ -15,7 +16,8 @@ export const mainDeck = [
     "type": null,
     "power": 4,
     "ability": "Ai, Jão!: Ao entrar no Canto, você pode fazer um jogador doar 1 carta para outro jogador que não seja você. Se fizer, você também compra 1 carta.",
-    "isKing": false
+    "isKing": false,
+    "img": '2.png'
   },
   {
     "id": 3,
@@ -35,7 +37,8 @@ export const mainDeck = [
     "power": 3,
     "resistencia": 1,
     "ability": "Gambiarrista: enquanto está no Canto, você só precisa de 3 mendigos de um mesmo tipo para ganhar e um outro de qualquer tipo.",
-    "isKing": false
+    "isKing": false,
+    "img": "4.png"
   },
   {
     "id": 5,
@@ -555,7 +558,8 @@ export const mainDeck = [
     "power": null,
     "resistencia": null,
     "ability": "Cada jogador deve doar 1 carta para o jogador à sua direita.",
-    "isKing": false
+    "isKing": false,
+    "img": "1.png"
   },
   {
     "id": 57,
@@ -855,7 +859,8 @@ export const mainDeck = [
     "power": 1,
     "resistencia": 3,
     "ability": "Chocolatinho pras crianças: Não tem subtipo. Quando entra no Canto, você pode fazer um jogador doar 1 carta para você.",
-    "isKing": false
+    "isKing": false,
+    "img": "86.png"
   },
   {
     "id": 87,
@@ -864,8 +869,9 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 4,
-    "ability": "Escondido nos bastidores: Não tem subtipo. Quando no Canto, você pode escondê-lo (virar face baixo) para protegê-lo de ataques.",
-    "isKing": false
+    "ability": "Escondido nos bastidores: Se estiver no campo de batalha sem defensor, não pode ser atacado.",
+    "isKing": false,
+    "img": "87.png"
   },
   {
     "id": 88,
@@ -934,8 +940,9 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 3,
-    "ability": "Dar milho para os outros: Não tem subtipo. Quando atacando, você deve doar 1 carta se ganhar a disputa.",
-    "isKing": false
+    "ability": "Defensor. ",
+    "isKing": false,
+    "img": "94.png"
   },
   {
     "id": 95,
