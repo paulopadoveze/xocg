@@ -18,7 +18,9 @@
 
         <div class="players-board-container" :class="getNumberOfPlayerCSSClass">
 
-          <div v-for="playerState in gameState.players" :key="playerState.id">
+          <template v-for="playerState in gameState.players" :key="playerState.id">
+            <div style="position: absolute; top: 0; right: 0; background: black; font-size: 10px;"></div>
+            <pre><code>{{playerState.field}}</code></pre>
 
             <div class="playerBoard" v-if="currentPlayer.id !== playerState.id" :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
               <div class="playerField">
@@ -32,7 +34,7 @@
               </div>
               <PlayerHand :cards="playerState.hand" :opponent="true" />
             </div>
-            <div class="playerBoard" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
+            <div class="playerBoard player" v-else :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
               <PlayerField
                 :cards="playerState.field"
                 :field-id="playerState.id"
@@ -50,7 +52,7 @@
 
             </div>
             
-          </div>
+          </template>
         </div> <!-- Players Status -->
         
       </div>
@@ -269,11 +271,11 @@ const nextPlayer = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  console.log('GameBoard mounted. Player:', {
-    id: playerId.value,
-    name: playerName.value,
-    fromStorage: !!localStorage.getItem('playerId')
-  })
+  // console.log('GameBoard mounted. Player:', {
+  //   id: playerId.value,
+  //   name: playerName.value,
+  //   fromStorage: !!localStorage.getItem('playerId')
+  // })
   
   // Build card details lookup
   buildCardDetailsMap()
@@ -294,18 +296,18 @@ onUnmounted(() => {
 })
 
 function setupRealtimeUpdates() {
-  console.log('🔄 Setting up realtime game updates')
+  //console.log('🔄 Setting up realtime game updates')
   
   // Get room ID first, then subscribe
   getRoom(props.roomCode).then(room => {
     if (!room?.id) {
-      console.error('Cannot setup realtime: Room not found')
+      //console.error('Cannot setup realtime: Room not found')
       return
     }
     
     // Watch for game state changes
     realtimeStore.watchGame(room.id, (payload) => {
-      console.log('🎲 Game state updated via realtime:', payload)
+      //console.log('🎲 Game state updated via realtime:', payload)
       
       if (payload.new?.game_data) {
         // Update local state
@@ -326,7 +328,7 @@ function setupRealtimeUpdates() {
     // Also watch for player changes (in case someone leaves)
     realtimeStore.watchRoom(room.id, (payload) => {
       if (payload.eventType === 'DELETE' && payload.old.player_id === playerId.value) {
-        console.log('🚫 Player removed from game')
+        //console.log('🚫 Player removed from game')
         alert('You have been removed from the game')
         leaveGame()
       }
@@ -357,7 +359,7 @@ async function onPlayerFieldUpdate(playerIdParam, newCards) {
   try {
     const player = gameState.value.players.find(p => p.id === playerIdParam)
     if (!player) {
-      console.warn('Player not found for field update:', playerIdParam)
+      //console.warn('Player not found for field update:', playerIdParam)
       return
     }
 
@@ -372,7 +374,6 @@ async function onPlayerFieldUpdate(playerIdParam, newCards) {
         ...(typeof item === 'object' ? { ...item } : { cardId: item }),
         isTapped: item.isTapped || false,
         position: item.position != null ? item.position : flatField.length,
-        isStackedOn: null
       }
       // ensure we don't keep nested 'cards' array in the flat model
       delete mainCard.cards
@@ -529,6 +530,7 @@ function normalizeFieldCards(list) {
  * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target, targetFieldId }
  */
 async function onDropOnField(payload) {
+  console.log('drop on filed')
   const { cardId, targetFieldId } = payload
   const targetPlayer = gameState.value.players.find(p => p.id === targetFieldId)
   if (!targetPlayer) return
@@ -588,7 +590,7 @@ async function onDropOnStack(payload) {
   console.log('target stack', targetStack)
   
   if (!targetStack) {
-    // Fallback: add as top-level
+    // // Fallback: add as top-level
     targetPlayer.field.push({ cardId, isTapped: false, position: targetPlayer.field.length, isStackedOn: null })
     addLog(`Card ${cardId} added to ${targetPlayer.name}'s field`)
     await saveGameStateToDb()
@@ -1009,9 +1011,9 @@ async function saveGameStateToDb() {
     
     const { saveGameState } = useSupabase()
     await saveGameState(room.id, gameState.value)
-    console.log('💾 Game state saved (will trigger realtime update)')
+    //console.log('💾 Game state saved (will trigger realtime update)')
   } catch (err) {
-    console.error('Error saving game state:', err)
+    //console.error('Error saving game state:', err)
     throw err
   }
 }
@@ -1062,6 +1064,7 @@ function leaveGame() {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  height: 100%;
 }
 
 .gamelog-container {
@@ -1502,6 +1505,7 @@ function leaveGame() {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 3;
 }
 
 .game-hand__title {
@@ -1620,6 +1624,12 @@ function leaveGame() {
   display: grid;
   width: 100%;
   grid-template-rows: 1fr 1fr;
+  grid-template-areas: 'opponent' 'player';
+}
+
+.player {
+  background-color: rgba(255,255,255,0.1);
+  grid-area: player;
 }
 
 .players-board-container.boardFor3 {
@@ -1649,6 +1659,9 @@ function leaveGame() {
 }
 
 .opponentHand {
+  position: absolute;
+  left: 0;
+  top: 0;
   display: flex;
   gap: 0;
 }
@@ -1663,7 +1676,7 @@ function leaveGame() {
   align-items: center;
   border-radius: 6px;
   margin-right: -4rem;
-  width: 100px;
+  width: 50px;
   z-index: 1;
 }
 
@@ -1677,6 +1690,7 @@ function leaveGame() {
 .playerBoard {
   border: 1px solid #313131;
   height: 100%;
+  position: relative;
 }
 
 .playerBoard.currentPlayer {

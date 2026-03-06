@@ -109,7 +109,7 @@
 
 /* Optional: Add some global dark theme base styles */
 body {
-  background: var(--gradient-bg);
+  background: var(--color-bg);
   color: var(--color-text-primary);
   min-height: 100vh;
   margin: 0;

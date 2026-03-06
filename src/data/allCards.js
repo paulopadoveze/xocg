@@ -888,9 +888,10 @@ export const mainDeck = [
     "name": "Senhora do Tamagochi",
     "subtype": "Personagem",
     "type": null,
-    "power": 3,
+    "power": 2,
     "resistencia": 1,
-    "ability": "Tirar brinquedo de criança: Não tem subtipo. Quando defendendo, você pode roubar 1 carta da Mão do atacante se vencer a disputa.",
+    "isDefender": true,
+    "ability": "Tirar brinquedo de criança: Quando colocado como defensor, você pode roubar uma carta da mão de algum oponente.",
     "isKing": false
   },
   {
@@ -993,7 +994,7 @@ export const mainDeck = [
     "resistencia": 3,
     "ability": "Não tem subtipo. Resistência +1 para todos os outros Substitutos no seu Canto.",
     "isKing": false,
-    "img": 'card99-andrei-artefact-viber-image-2019-09-14-02-35-13.jpg'
+    "img": "99.png",
   },
   {
     "id": 100,

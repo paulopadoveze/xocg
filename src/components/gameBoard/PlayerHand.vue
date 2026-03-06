@@ -126,7 +126,7 @@ function onDrop(event) {
   align-items: center;
   border-radius: 6px;
   margin-right: -4rem;
-  width: 100px;
+  width: 5rem;
   z-index: 1;
 }
 

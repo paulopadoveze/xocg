@@ -337,15 +337,6 @@ const handleBlur = () => {
   }
   
   &__artwork {
-    background: black;
-    overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 35%;
-    right: 0;
-    z-index: 1;
-
   }
   
   &__artwork-placeholder {

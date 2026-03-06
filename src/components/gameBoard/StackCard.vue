@@ -228,11 +228,9 @@ function onDragLeave(event) {
 }
 
 function onDrop(event) {
+  event.stopPropagation()
   isDragOver.value = false
   // Don't allow dropping if there's already a stack on this card
-  if (hasStack.value) {
-    return // Prevent drop onto cards that already have a stack
-  }
   const raw = event.dataTransfer.getData('application/xcg-card')
   if (!raw) return
   try {

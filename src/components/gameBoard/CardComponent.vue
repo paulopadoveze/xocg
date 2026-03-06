@@ -37,25 +37,23 @@
       
       <!-- Card Content -->
       <div class="card__content">
-        <div class="card__artwork">
-          <img :src="imageSrc" v-if="card.img"  >
-        </div>
+        
         <div class="card__header">
-          <h3 class="card__name -resumed">{{ card.name }}</h3>
+          <h3 class="card__name-wrapper -resumed">
+            {{ card.name }}
+          </h3>
           <span v-if="card.power" class="card__power">
             {{ card.power }}
           </span>
         </div>
+        <div class="card__artwork">
+          <img :src="imageSrc" v-if="card.img"  >
+        </div>
         <div class="card__body">
           <div class="card__type">{{ card.subtype }}</div>
           <div class="card__description">
+            <div class="card__powerTag -defender" v-if="card.isDefender">Defensor</div>  
             {{ card.ability }}
-          </div>
-          <div v-if="card.power || card.health" class="card__stats">
-            
-            <span v-if="card.health" class="card__stat card__stat--health">
-              {{ card.health }}
-            </span>
           </div>
         </div>
         
@@ -71,18 +69,20 @@
     <template #content>
       <div class="card -large" :class="getCardSubtypeClass(card.subtype)">
         <div class="card__content">
-          <div class="card__artwork">
-            <img :src="imageSrc" v-if="card.img"  >
-          </div>
+          
           <div class="card__header">
-            <h3 class="card__name">{{ card.name }}</h3>
+            <h3 class="card__name-wrapper">{{ card.name }}</h3>
             <span v-if="card.power" class="card__power">
               {{ card.power }}
             </span>
           </div>
+          <div class="card__artwork">
+            <img :src="imageSrc" v-if="card.img"  >
+          </div>
           <div class="card__body">
             <div class="card__type">{{ card.subtype }}</div>
             <div class="card__description">
+              <div class="card__powerTag -defender" v-if="card.isDefender">Defensor</div>  
               {{ card.ability }}
             </div>
           </div>
@@ -233,12 +233,13 @@ const handleBlur = () => {
 // Card styles
 .card {
   --cardSize: 1;
+  --cardTitleSize: 1;
   --bgCard: #595959;
   position: relative;
   width: 7rem;
   aspect-ratio: 6/8.5;
   background: var(--bgCard);
-  border-radius: calc(var(--cardSize) * 8px);
+  border-radius: calc(var(--cardSize) * 16px);
   cursor: grab;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
@@ -319,6 +320,7 @@ const handleBlur = () => {
 
   &.-small {
     --cardSize: 0.5;
+    --cardTitleSize: 0.75;
   }
 
   &.-large {
@@ -327,46 +329,53 @@ const handleBlur = () => {
   }
   
   &__content {
-    height: 100%;
+    border-radius: calc(var(--cardSize)*9px);
+    background: black;
+    height: calc(100% - calc(var(--cardSize) * 1rem));
     display: flex;
     flex-direction: column;
     position: relative;
     z-index: 2;
+    margin: calc(var(--cardSize) * 0.5rem);
+    gap: calc(var(--cardSize) * 4px);
+    padding:  calc(var(--cardSize) * 4px);
+
   }
   
   &__header {
+    border-radius: 0 calc(var(--cardSize) * 9px)  0 0;
     background: white;
-    border: calc(var(--cardSize) * 4px) solid black;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto calc(var(--cardSize)*2.5rem);
     justify-content: space-between;
     align-items: stretch;
-    border-radius: 5px;
-    margin: 0.5rem;
     z-index: 3;
-    position: relative;
+    align-content: center;
   }
-  
-  &__name {
-    padding: 0.25rem;
+
+  &__name-wrapper {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: calc(var(--cardSize)*0.25rem);
     letter-spacing: -1px;
-    font-size: 1rem;
+    font-size: calc(var(--cardTitleSize) * 1rem);
     font-weight: 700;
     color: black;
     margin: 0;
     line-height: 1.2;
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   &__power {
+    border-radius: 0 calc(var(--cardSize) * 9px)  0 0;
     background: #dc3a15;
     color: white;
-    font-size: 1.2rem;
+    font-size: calc(var(--cardTitleSize) * 1.2rem);
     font-weight: 700;
+    height: 100%;
     text-align: center;
-    width: 2rem;
-    border: calc(var(--cardSize) * 4px) solid black;
+    border-left: calc(var(--cardSize) * 4px) solid black;
   }
   
   &__cost {
@@ -381,24 +390,21 @@ const handleBlur = () => {
   }
   
   &__artwork {
-    background: black;
+    height: calc(var(--cardSize) * 8.4rem);
+    border-top: 0;
     overflow: hidden;
-    position: absolute;
-    top: 0.5rem;
-    left: 0.5rem;
-    bottom: 45%;
-    right: .5rem;
-    z-index: 1;
-    border: calc(var(--cardSize) * 4px) solid black;
+    pointer-events: none;
+
+    > img {
+      width: 100%;
+      display: block;
+    }
   }
   
   &__artwork-placeholder {
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, 
-      rgba(139, 92, 246, 0.2) 0%,
-      rgba(0, 217, 255, 0.1) 50%,
-      transparent 100%);
+    background: #232323;
     border-radius: 6px;
   }
   
@@ -408,7 +414,8 @@ const handleBlur = () => {
     flex-direction: column;
     position: relative;
     z-index: 3;
-    margin-top: 52%;
+    gap: calc(var(--cardSize) * 4px);
+    overflow: hidden;
   }
   
   &__description {
@@ -417,15 +424,19 @@ const handleBlur = () => {
     font-size: 0.625rem;
     color: black;
     line-height: 1.3;
-    margin-bottom: 0.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0.75rem 0.6rem;
-    margin: 0 .5rem 0.5rem;
+    padding: calc(var(--cardSize) * 0.75rem)  calc(var(--cardSize) * 0.6rem);
     height: 100%;
+    flex-grow: 2;
     font-size: 0.8rem;
     line-height: 1.3;
-    border: calc(var(--cardSize) * 4px) solid black;
+    border-radius: 0 0 calc(var(--cardSize) * 9px) calc(var(--cardSize) * 9px);
+  }
+
+  &__powerTag {
+    font-weight: 700;
+    margin-bottom: 0.2rem;
   }
   
   &__stats {
@@ -459,15 +470,12 @@ const handleBlur = () => {
     background: color-mix(in srgb, var(--bgCard),#404040);
 
     font-weight: 700;
-    font-size: 0.75rem;
-
-    margin: 0 1.5rem -0.5rem;
+    font-size: calc(var(--cardSize) * 0.75rem);
     text-align: center;
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
     z-index: 2;
-    border: calc(var(--cardSize) * 4px) solid black;
   }
     
   &__glow {

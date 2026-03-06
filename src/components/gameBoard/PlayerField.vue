@@ -160,18 +160,19 @@ function onDrop(event) {
 <style scoped>
 .cardArea {
   min-height: 50px;
-  outline: 1px dashed rgba(255, 255, 255, 0.2);
   list-style: none;
   padding: 0.5rem;
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-start;
+  gap: 2.5rem;
+
   transition: outline 0.15s ease, background 0.15s ease;
+  height: 100%;
 }
 
 .player-field {
   width: 100%;
+  height: 100%;
 }
 
 .player-field--drag-over .cardArea {
