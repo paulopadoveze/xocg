@@ -4,6 +4,7 @@ import './style.css'
 import App from './App.vue'
 import router from './router'
 import { plugin as TippyPlugin } from 'vue-tippy'
+import VueKonva from 'vue-konva';
 
 // import 'tippy.js/dist/tippy.css'
 // import 'tippy.js/themes/light.css'
@@ -13,6 +14,7 @@ const app = createApp(App)
 const pinia = createPinia()
 
 createApp(App)
+  .use(VueKonva)
   .use(pinia)
   .use(router)
   .use(TippyPlugin)
