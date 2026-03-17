@@ -5,7 +5,8 @@ export const mainDeck = [
     "subtype": "Tradicional",
     "type": null,
     "power": 4,
-    "ability": "Mendigo Alpha: quando atacar pela mão, ganha +2 de Força nesta disputa.",
+    "cost": 'Cada jogador compra uma carta.',
+    "ability": "Mendigo Alpha: quando entra em jogo, ganha +2 de Força até o final do seu turno.",
     "isKing": true,
     "img": '1.png'
   },
@@ -15,7 +16,7 @@ export const mainDeck = [
     "subtype": "Tradicional",
     "type": null,
     "power": 4,
-    "ability": "Ai, Jão!: Ao entrar no Canto, você pode fazer um jogador doar 1 carta para outro jogador que não seja você. Se fizer, você também compra 1 carta.",
+    "ability": "Não cagar na lata: Wescley Zuzza não pode ser alvo de efeitos do oponente. Ele ainda pode ser atacado normalmente.",
     "isKing": false,
     "img": '2.png'
   },
@@ -26,7 +27,7 @@ export const mainDeck = [
     "type": null,
     "power": 5,
     "resistencia": 2,
-    "ability": "Reciclar história: Quando Vanderson entra no Canto, pegue 1 carta do descarte e coloque na sua Mão.",
+    "ability": "Reciclar história: Quando Vanderson entra em jogo, pegue 1 carta do lixo que não seja de mendigo e coloque em sua mão.",
     "isKing": false
   },
   {
@@ -36,7 +37,7 @@ export const mainDeck = [
     "type": null,
     "power": 3,
     "resistencia": 1,
-    "ability": "Gambiarrista: enquanto está no Canto, você só precisa de 3 mendigos de um mesmo tipo para ganhar e um outro de qualquer tipo.",
+    "ability": "Gambiarrista: enquanto estiver em jogo, você só precisa de 3 mendigos de um mesmo tipo e um outro de qualquer tipo para vencer o jogo.",
     "isKing": false,
     "img": "4.png"
   },
@@ -45,7 +46,7 @@ export const mainDeck = [
     "name": "Leandro Pereira",
     "subtype": "Tradicional",
     "type": null,
-    "power": 5,
+    "power": 2,
     "resistencia": 2,
     "ability": "Desmaiar de tanto rir: Se defender com esta carta, após a disputa, coloque-a de volta no baralho.",
     "isKing": false
@@ -55,9 +56,9 @@ export const mainDeck = [
     "name": "Sofia Tourinho",
     "subtype": "Tradicional",
     "type": null,
-    "power": 4,
+    "power": 1,
     "resistencia": 2,
-    "ability": "Brigar com outra madrinha no casamento: Se esta carta for roubada do seu Canto, o ladrão deve doar 1 carta para vocẽ.",
+    "ability": "Brigar com outra madrinha no casamento: Se esta carta for roubada do seu campo, o ladrão deve doar 1 carta para vocẽ.",
     "isKing": false
   },
   {
@@ -65,19 +66,19 @@ export const mainDeck = [
     "name": "Bárbara Louca",
     "subtype": "Tradicional",
     "type": null,
-    "power": 3,
+    "power": 0,
     "resistencia": 2,
-    "ability": "Arremesso de anão: Ao defender, você pode descartar 1 carta da Mão. Se fizer, ganhe +3 de Força nesta disputa.",
+    "ability": "Arremesso de anão: Ao defender, você pode descartar 1 carta da mão. Se fizer, ganhe +3 de Força nesta disputa.",
     "isKing": false
   },
   {
     "id": 8,
-    "name": "Rair da Motoneta",
-    "subtype": "Tradicional",
+    "name": "Mototaxi de Ourinhos",
+    "subtype": "Lenda",
     "type": null,
-    "power": 4,
+    "power": 5,
     "resistencia": 2,
-    "ability": "Sozinho na ladeira; esta carta não pode ser defendida.",
+    "ability": "Garupa arruinada: não pode defender mendigos tradicionais. Se for atacado por um mendigo tradicional, perde automaticamente.",
     "isKing": false
   },
   {
@@ -87,7 +88,7 @@ export const mainDeck = [
     "type": null,
     "power": 3,
     "resistencia": 2,
-    "ability": "Provedor do Caos: Quando ataca a mão do jogador, o defensor escolhe aleatoriamente uma carta da mão",
+    "ability": "Provedor do Caos: Quando ataca um jogador, o defensor descarta aleatoriamente uma carta da sua mão. Você compra uma carta.",
     "isKing": false
   },
   {
@@ -97,14 +98,14 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 2,
-    "ability": "Contrato de Amizade: se alguém atacar um mendigo do seu canto, você pode revelar essa carta para somar o poder dela à carta atacada. Se o fizer, descarta esta carta.",
+    "ability": "Contrato de Amizade: se defendido, a Força base de GarotoVaca se torna 3.",
     "isKing": false
   },
   {
     "id": 11,
     "name": "Uxo",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 3,
     "resistencia": 1,
     "ability": "Melhor host de podcast: Uxo pode ser usado como rei para a contagem para vencer o jogo.",
@@ -112,21 +113,22 @@ export const mainDeck = [
   },
   {
     "id": 12,
-    "name": "Zoppe",
+    "name": "Seu Zoppe",
     "subtype": "Mendigo",
-    "type": "Convidado",
-    "power": 4,
+    "type": "Lenda",
+    "power": 2,
     "resistencia": 2,
-    "ability": "Ai, Jão!: Quando Zoppe entra no Canto, você pode forçar um jogador a doar 1 carta para você.",
+    "ability": "Homem do Saco: quando entra em jogo, você pode roubar um mendigo do tipo Personagem ou Lenda de um oponente",
     "isKing": false
   },
   {
     "id": 13,
     "name": "Eves",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 2,
     "resistencia": 1,
+    "isDefender": true,
     "ability": "Quebrar caneca: Quando Eves defende com sucesso, você pode descartar 1 carta da mão do atacante.",
     "isKing": false
   },
@@ -134,20 +136,20 @@ export const mainDeck = [
     "id": 14,
     "name": "Cabelo Queimado",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Lenda",
     "power": 1,
     "resistencia": 2,
-    "ability": "Virar o rambo: Se defender sozinho (sem outras cartas reveladas), ganha +3 de Força.",
+    "ability": "Virar o rambo: se vocẽ for atacado, você pode sacrifiar um outro mendigo seu em campo. Se o fizer, Cabelo Queimado ganha +3 de Força até o final do turno.",
     "isKing": false
   },
   {
     "id": 15,
     "name": "Ouvintes Lameruxos",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 1,
     "resistencia": 4,
-    "ability": "Financiar Lixo: Quando esta carta está no Canto, sempre que alguém doar para você, compre 1 carta extra.",
+    "ability": "Financiar Lixo: Quando esta carta está em campo, sempre que alguém doar para você, compre 1 carta extra.",
     "isKing": false
   },
   {
@@ -157,7 +159,7 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 3,
     "resistencia": 1,
-    "ability": "Espíritos das Joaninhas: Se roubada do Canto, o ladrão deve doar 1 carta para cada outro jogador.",
+    "ability": "Amizade ou pão de coco: quando essa carta entra em jogo, você pode descartar uma carta, se o fizer, coloque um mendigo do lixo em sua mão.",
     "isKing": false
   },
   {
@@ -167,7 +169,7 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 2,
-    "ability": "Comprar ao invés de alugar: Quando Thaís entra no Canto, compre 2 cartas, depois doe 1 carta.",
+    "ability": "Comprar ao invés de alugar: Quando Thaís entra em jogo, compre 2 cartas, depois doe 1 carta para um outro jogador.",
     "isKing": false
   },
   {
@@ -177,7 +179,7 @@ export const mainDeck = [
     "type": "Personagem",
     "power": 2,
     "resistencia": 2,
-    "ability": "Espreitando no viaduto: Quando ataca um Canto com Rei, ganha +3 de Força.",
+    "ability": "Espreitando no viaduto: Quando ataca um mendigo Tradicional, ganha +3 de Força até o fim do turno.",
     "isKing": false
   },
   {
@@ -185,9 +187,9 @@ export const mainDeck = [
     "name": "Caçadores Urbanos de Chiclete",
     "subtype": "Mendigo",
     "type": "Personagem",
-    "power": 0,
+    "power": 1,
     "resistencia": 2,
-    "ability": "Vasculhar o chão: Quando esta carta entra no Canto, procure um Rei Mendigo no descarte e coloque-o em sua Mão.",
+    "ability": "Vasculhar o chão: Quando esta carta entra no Canto, procure um Rei Mendigo no lixo e coloque-o em sua mão.",
     "isKing": false
   },
   {
@@ -197,26 +199,27 @@ export const mainDeck = [
     "type": "Personagem",
     "power": 1,
     "resistencia": 1,
-    "ability": "Abrir a tramela: Pode trocar de lugar com uma carta do Canto uma vez por turno (ação livre).",
+    "ability": "Abrir a tramela: Pode trocar de lugar com uma carta do campo uma vez por turno (ação livre).",
     "isKing": false
   },
   {
     "id": 21,
     "name": "Cesar Teruya",
     "subtype": "Mendigo",
-    "type": "Convidado",
-    "power": 4,
+    "type": "Personagem",
+    "power": 1,
     "resistencia": 2,
-    "ability": "Palhaço enganado: Quando entra no Canto, todos os jogadores (incluindo você) doam 1 carta para o jogador que possuir a menor soma de cartas no canto e na mão.",
+    "ability": "Palhaço enganado: Quando entra no Canto, todos os jogadores (incluindo você) doam 1 carta para o jogador que possuir a menor soma de cartas em jogo e na mão.",
     "isKing": false
   },
   {
     "id": 22,
     "name": "Muramatsu",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 1,
     "resistencia": 3,
+    "isDefender": true,
     "ability": "Homem-doença: Quando defende, o atacante deve descartar 1 carta da Mão antes de revelar.",
     "isKing": false
   },
@@ -227,17 +230,17 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 1,
     "resistencia": 2,
-    "ability": "Brasil pra mim também: Sempre que uma carta de Ação é jogada, Zavanin ganha +1 de Força permanente.",
+    "ability": "Brasil pra mim também: Sempre que uma carta de ação é jogada, Zavanin ganha +2 de força até o final do turno.",
     "isKing": false
   },
   {
     "id": 24,
     "name": "Lombriga",
     "subtype": "Mendigo",
-    "type": "Convidao",
+    "type": "Convidado",
     "power": 5,
     "resistencia": 2,
-    "ability": "Grande demais: Não pode ser defendido por mais de uma carta (só pode revelar 1 carta para defendê-lo).",
+    "ability": "Grande demais: não pode ser defendido e nem defender.",
     "isKing": false
   },
   {
@@ -247,7 +250,8 @@ export const mainDeck = [
     "type": "Personagem",
     "power": 4,
     "resistencia": 1,
-    "ability": "Comerciante Inverso: Quando rouba uma carta, deve doar 1 carta da sua Mão para o jogador atacado.",
+    "isDefender": false,
+    "ability": "Comerciante Inverso: ao vencer um ataque, deve doar 1 carta da sua Mão para o jogador atacado. ",
     "isKing": false
   },
   {
@@ -257,47 +261,50 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 3,
-    "ability": "Jacaré de Fila: Quando esta carta está no Canto, você pode curar 1 mendigo (virar uma carta exausta) uma vez por turno.",
+    "cost": "Cada jogador compra uma carta.",
+    "ability": "Metralhadora de stories: quando Careca do Amor entra em jogo, compre duas cartas.",
     "isKing": false
   },
   {
     "id": 27,
     "name": "Jabuti Nadador",
     "subtype": "Mendigo",
-    "type": "Personagem",
+    "type": "Lenda",
     "power": 6,
     "resistencia": 4,
-    "ability": "Melhor sozinho: não pode ser defendido ou ser alvo de ações que você controla.",
+    "ability": "Melhor sozinho: Jabuti Nadador recebe -1 de Força para cada mendigo no seu campo.",
     "isKing": false
   },
   {
     "id": 28,
-    "name": "Paulinho Siqueira",
+    "name": "Carol Reis",
     "subtype": "Mendigo",
     "type": "Convidado",
     "power": 2,
     "resistencia": 1,
-    "ability": "Coach Desmotivacional: Se atacar o canto, o jogador oponente não pode revelar carta para defender.",
+    "isAttacker": true,
+    "ability": "Doutora em quebrar regras: pode auxiliar no ataque como ação livre.",
     "isKing": false
   },
   {
     "id": 29,
     "name": "Bergs",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 1,
     "resistencia": 3,
-    "ability": "Confabular: Quando defendendo, você pode fazer outro jogador defender no seu lugar (ele revela cartas).",
+    "isAttacker": true,
+    "ability": "Confabular: quando atacar, você pode ver a mão de um jogador e escolher um mendigo que esteja apto a atacar. Se o fizer, coloque este mendigo como atacante auxiliar de Bergs.",
     "isKing": false
   },
   {
     "id": 30,
     "name": "Rafa Amorin",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 0,
     "resistencia": 0,
-    "ability": "Imitador: Ao entrar no Canto, copie o subtipo e ability de outro mendigo no Canto de qualquer jogador.",
+    "ability": "Imitador: Ao entrar no Canto, copie o subtipo e habilidade de outro mendigo em jogo de um oponente.",
     "isKing": false
   },
   {
@@ -307,7 +314,7 @@ export const mainDeck = [
     "type": "Personagem",
     "power": 2,
     "resistencia": 1,
-    "ability": "Obrigado, Febrino: Se descartado da Mão para pagar um custo, compre 2 cartas.",
+    "ability": "Obrigado, Febrino: Se descartado da sua mão, compre 1 carta.",
     "isKing": false
   },
   {
@@ -317,7 +324,8 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 2,
-    "ability": "Queimada com paralelepípedo: Quando ataca com sucesso, você pode descartar 1 carta do Canto do defensor.",
+    "cost": "Descarte uma carta.",
+    "ability": "Queimada com paralelepípedo: Quando ataca com sucesso, você pode destruir um 1 mendigo do defensor com poder maior que de Mirandola.",
     "isKing": false
   },
   {
@@ -327,7 +335,7 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 1,
-    "ability": "Músico de bar: Quando no Canto, no início do seu turno, você pode fazer um jogador doar 1 carta para você.",
+    "ability": "Músico de bar: quando entrar em jogo, você pode fazer um oponente doe 1 carta para você.",
     "isKing": false
   },
   {
@@ -337,17 +345,17 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 1,
-    "ability": "Cantar parabéns: Quando entra no Canto, cada jogador (incluindo você) devolve 1 mendigo do Canto para a Mão.",
+    "ability": "Cantar parabéns: Quando entra em jogo, cada jogador (incluindo você) devolve 1 mendigo do seu campo para a mão.",
     "isKing": false
   },
   {
     "id": 35,
     "name": "Aline Salame",
     "subtype": "Mendigo",
-    "type": "Convidado",
+    "type": "Ouvinte",
     "power": 1,
     "resistencia": 1,
-    "ability": "Salame do banimento: Quando esta carta é doada para você, você pode descartar 1 carta da Mão do doador.",
+    "ability": "Salame do banimento: Quando entra em jogo, destrua um mendigo do tipo Ouvinte.",
     "isKing": false
   },
   {
@@ -367,7 +375,7 @@ export const mainDeck = [
     "type": "Personagem",
     "power": 2,
     "resistencia": 2,
-    "ability": "Rir nas sombras: Pode ser revelado da Mão para defender mesmo se você não for o alvo (defende qualquer jogador).",
+    "ability": "Rir nas sombras: Pode ser revelado da Mão para defender mesmo se você não for o alvo (defende qualquer jogador). Se o fizer, coloque-o em campo depois defendendo um mendigo seu.",
     "isKing": false
   },
   {
@@ -384,10 +392,10 @@ export const mainDeck = [
     "id": 39,
     "name": "Ozola",
     "subtype": "Mendigo",
-    "type": "Personagem",
+    "type": "Lenda",
     "power": 2,
     "resistencia": 1,
-    "ability": "Participativo: Pode contar como qualquer subtipo (mas não como Rei) para condições de vitória.",
+    "ability": "Participativo: Pode contar como qualquer subtipo (mas não como Tradicional) para condições de vitória.",
     "isKing": false
   },
   {
@@ -397,17 +405,17 @@ export const mainDeck = [
     "type": "Convidado",
     "power": 2,
     "resistencia": 1,
-    "ability": "Relembrar em música grudenta: Quando um jogador joga uma carta de Ação, você pode descartar esta carta para cancelar o efeito.",
+    "ability": "Música grudenta: Quando um jogador joga uma carta de Ação, você pode descartar esta carta para cancelar o efeito.",
     "isKing": false
   },
   {
     "id": 41,
     "name": "Rafael Madalon",
     "subtype": "Mendigo",
-   "type": "Ouvinte",
-    "power": 3,
+    "type": "Ouvinte",
+    "power": 2,
     "resistencia": 1,
-    "ability": "Líder de Comunidade: Enquanto no Canto, seus outros mendigos ganham +1 de Resistência.",
+    "ability": "Líder de Comunidade: Enquanto esta em jogo, seus outros mendigos do tipo Ouvinte ganham +1 de Força.",
     "isKing": false
   },
   {
@@ -418,36 +426,38 @@ export const mainDeck = [
     "power": 2,
     "resistencia": 1,
     "ability": "Presente de merda: Quando doado para alguém, você (o doador) compra 1 carta.",
-    "isKing": false
+    "isKing": false,
+    "img": "42.png"
   },
   {
     "id": 43,
-    "name": "O Rei do Lixão",
-    "subtype": "Rei",
+    "name": "Ronnie brigador",
+    "subtype": "Ouvinte",
     "type": null,
-    "power": 1,
+    "power": 3,
     "resistencia": 1,
-    "ability": "Decreto Real: Quando entra no Canto, procure no baralho por um mendigo e coloque-o no seu Canto. Embaralhe.",
+    "isDefender": true,
+    "ability": "Cabeçada no soco: quando algum oponente vence qualquer ataque, você pode doar Ronnie da sua mão para o jogador atacante. Se o fizer, você recebe os mendigos que perderam ao invês do jogador atacante.",
     "isKing": true
   },
   {
-    "id": 44,
-    "name": "A Rainha das Latas",
-    "subtype": "Rei",
+     "id": 44,
+    "name": "Rair da Motoneta",
+    "subtype": "Tradicional",
     "type": null,
-    "power": 1,
-    "resistencia": 1,
-    "ability": "Decreto Real: Quando entra no Canto, cada jogador deve doar 1 carta para você.",
-    "isKing": true
+    "power": 4,
+    "resistencia": 2,
+    "ability": "Sozinho na ladeira: esta carta não pode ser defendida ou defender.",
+    "isKing": false
   },
   {
     "id": 45,
-    "name": "O Imperador dos Catadores",
-    "subtype": "Rei",
+    "name": "Ritual de Alapiroca",
+    "subtype": "Ação",
     "type": null,
     "power": 1,
     "resistencia": 1,
-    "ability": "Decreto Real: Quando entra no Canto, você pode pegar qualquer 1 carta do descarte e colocá-la no seu Canto.",
+    "ability": "O mendigo seu escolhido recebe +3 de Força. Destrua-a no final do turno.",
     "isKing": true
   },
   {
@@ -588,7 +598,7 @@ export const mainDeck = [
     "type": "Contra-ataque",
     "power": null,
     "resistencia": null,
-    "ability": "Jogue esta carta quando alguém atacar você. O atacante deve descartar 1 carta da Mão antes de revelar.",
+    "ability": "Destrua um grupo de mendigos. O jogador que perdeu os mendigos, compra uma carta.",
     "isKing": false
   },
   {
@@ -598,7 +608,7 @@ export const mainDeck = [
     "type": "Reforço",
     "power": null,
     "resistencia": null,
-    "ability": "Durante uma disputa, o mendigo que você está usando ganha +4 de Força. Após a disputa, exauste esse mendigo.",
+    "ability": "O mendigo que está em jogo pode atacar. Ele recebe +2 de Força até o final do turno.",
     "isKing": false
   },
   {
@@ -608,7 +618,7 @@ export const mainDeck = [
     "type": "Ataque Rápido",
     "power": null,
     "resistencia": null,
-    "ability": "Durante uma disputa, o mendigo que você está usando ganha +3 de Força.",
+    "ability": "Durante uma disputa, o mendigo que você está usando ganha +3 de Força se estiver sozinho.",
     "isKing": false
   },
   {
@@ -618,7 +628,7 @@ export const mainDeck = [
     "type": "Ataque Sorrateiro",
     "power": null,
     "resistencia": null,
-    "ability": "Durante uma disputa, o defensor não pode usar abilitys de cartas reveladas.",
+    "ability": "Durante uma disputa, o defensor não pode revelar cartas para defender (mendigos ou ação).",
     "isKing": false
   },
   {
@@ -628,7 +638,7 @@ export const mainDeck = [
     "type": "Bônus Coletivo",
     "power": null,
     "resistencia": null,
-    "ability": "Todos os seus mendigos no Canto ganham +1 de Força até o início do seu próximo turno.",
+    "ability": "Todos os seus mendigos no seu campo ganham +1 de Força até o início do seu próximo turno.",
     "isKing": false
   },
   {
@@ -638,7 +648,7 @@ export const mainDeck = [
     "type": "Debuff",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha um mendigo em qualquer Canto. Aquele mendigo perde todas as abilitys até o início do seu próximo turno.",
+    "ability": "O poder do mendigo escolhido é reduzido a 0 até o final do início do seu próximo turno.",
     "isKing": false
   },
   {
@@ -648,7 +658,7 @@ export const mainDeck = [
     "type": "Proteção Especial",
     "power": null,
     "resistencia": null,
-    "ability": "Até o início do seu próximo turno, outros jogadores não podem escolher seu Canto como alvo de ações.",
+    "ability": "Até o início do seu próximo turno, nenhum mendigo pode ser roubado ou sair da mesa.",
     "isKing": false
   },
   {
@@ -658,7 +668,7 @@ export const mainDeck = [
     "type": "Redução",
     "power": null,
     "resistencia": null,
-    "ability": "Todos os mendigos em Cantos perdem -2 de Força até o início do seu próximo turno.",
+    "ability": "Todos os mendigos oponentes perdem -1 de Força até o início do seu próximo turno.",
     "isKing": false
   },
   {
@@ -668,7 +678,7 @@ export const mainDeck = [
     "type": "Salvamento",
     "power": null,
     "resistencia": null,
-    "ability": "Quando um mendigo seu seria roubado, em vez disso, descarte esta carta para cancelar o roubo.",
+    "ability": "Quando um mendigo seu seria roubado, em vez disso, descarte esta carta para cancelar o roubo. Compre uma carta.",
     "isKing": false
   },
   {
@@ -678,7 +688,7 @@ export const mainDeck = [
     "type": "Evasão",
     "power": null,
     "resistencia": null,
-    "ability": "Quando você for atacado, você pode devolver o mendigo alvo para sua Mão em vez de defendê-lo.",
+    "ability": "Quando você for atacado, você pode devolver o mendigo alvo para sua mão em vez de defendê-lo. Compre uma carta.",
     "isKing": false
   },
   {
@@ -688,7 +698,7 @@ export const mainDeck = [
     "type": "Traição",
     "power": null,
     "resistencia": null,
-    "ability": "Roube 1 carta da Mão de um jogador e doe-a para outro jogador.",
+    "ability": "O jogador com mais cartas na mão, doa duas cartas para você.",
     "isKing": false
   },
   {
@@ -718,7 +728,7 @@ export const mainDeck = [
     "type": "Sacrifício",
     "power": null,
     "resistencia": null,
-    "ability": "Descarte 1 mendigo do seu Canto. Em troca, roube 1 carta do Canto de qualquer jogador.",
+    "ability": "Descarte 1 mendigo do seu campo. Roube um mendigo de um oponente.",
     "isKing": false
   },
   {
@@ -728,17 +738,17 @@ export const mainDeck = [
     "type": "Exílio",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha 1 mendigo de qualquer Canto. Exilie-o (coloque-o fora do jogo) até o início do seu próximo turno.",
+    "ability": "Escolha 1 mendigo de qualquer campo. Exilie-o (coloque-o fora do jogo) até o início do seu próximo turno.",
     "isKing": false
   },
   {
     "id": 74,
-    "name": "Aliança Temporária",
+    "name": "Vencedor de Reality Show",
     "subtype": "Ação",
     "type": "Política",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha um jogador. Até o início do seu próximo turno, vocês não podem atacar um ao outro.",
+    "ability": "Compre duas cartas e descarte 1.",
     "isKing": false
   },
   {
@@ -748,7 +758,7 @@ export const mainDeck = [
     "type": "Transformação",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha um mendigo no seu Canto. Ele pode contar como qualquer subtipo (exceto Rei) até o início do seu próximo turno.",
+    "ability": "Escolha um mendigo no seu campo e um tipo de mendigo. O mendigo é do tipo escolhido enquanto essa carta estiver em jogo.",
     "isKing": false
   },
   {
@@ -758,7 +768,7 @@ export const mainDeck = [
     "type": "Silenciamento",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha um mendigo em qualquer Canto. Aquele mendigo perde a ability até o início do seu próximo turno.",
+    "ability": "Escolha um mendigo em qualquer Canto. Aquele mendigo perde a habilidade até o início do seu próximo turno. Compre uma carta.",
     "isKing": false
   },
   {
@@ -778,7 +788,7 @@ export const mainDeck = [
     "type": "Proteção Duradoura",
     "power": null,
     "resistencia": null,
-    "ability": "Escolha um mendigo no seu Canto. Ele não pode ser alvo de ações ou disputas até o início do seu próximo turno.",
+    "ability": "Escolha um mendigo no seu campo. Ele não pode ser alvo de ações ou disputas até o início do seu próximo turno. Compre uma carta",
     "isKing": false
   },
   {
@@ -788,7 +798,8 @@ export const mainDeck = [
     "type": "Espionagem",
     "power": null,
     "resistencia": null,
-    "ability": "Olhe a Mão de um jogador. Escolha 1 carta para fazer com que ele a doe para outro jogador.",
+    "cost": "Descarte uma carta",
+    "ability": "Olhe a mão de um jogador. Escolha 1 carta para fazer com que ele a doe para outro jogador.",
     "isKing": false
   },
   {
@@ -798,7 +809,7 @@ export const mainDeck = [
     "type": "Sabedoria",
     "power": null,
     "resistencia": null,
-    "ability": "Compre 2 cartas. Depois, descarte 2 cartas da sua Mão.",
+    "ability": "Compre 2 cartas. Depois, descarte 1 carta  da sua mão.",
     "isKing": false
   },
   {
@@ -808,7 +819,8 @@ export const mainDeck = [
     "type": "Proteção Real",
     "power": null,
     "resistencia": null,
-    "ability": "Se você tiver um Rei no Canto, seu Canto não pode ser atacado até o início do seu próximo turno.",
+    "cost": "Só use essa carta se você possuir um mendigo tradicional em campo.",
+    "ability": "você não pode ser atacado. Qualquer jogador no inicio do seu próprio turno pode sacrificar um mendigo para destruir essa carta",
     "isKing": false
   },
   {
@@ -844,11 +856,11 @@ export const mainDeck = [
   {
     "id": 85,
     "name": "Joabt",
-    "subtype": "Substituto",
+    "subtype": "Lenda",
     "type": null,
     "power": 2,
     "resistencia": 2,
-    "ability": "Indiciar em Olímpia: Não tem subtipo. Pode contar como qualquer subtipo (exceto Rei) para condições de vitória.",
+    "ability": "Indiciar em Olímpia: Quando entra em jogo, destrua um mendigo com poder 1 ou menos.",
     "isKing": false
   },
   {
@@ -858,7 +870,7 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 3,
-    "ability": "Chocolatinho pras crianças: Não tem subtipo. Quando entra no Canto, você pode fazer um jogador doar 1 carta para você.",
+    "ability": "Chocolatinho pras crianças: Quando entra em jogo, você pode roubar um mendigo com poder 1 ou menos de algum oponente.",
     "isKing": false,
     "img": "86.png"
   },
@@ -880,7 +892,7 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 2,
-    "ability": "À procura do príncipe mendigo: Não tem subtipo. Pode ser trocado por qualquer mendigo no Canto uma vez por turno.",
+    "ability": "À procura do príncipe mendigo: pode defender ou trocar de defensor como ação livre, desde que seja um mendigo Tradicional.",
     "isKing": false
   },
   {
@@ -890,7 +902,6 @@ export const mainDeck = [
     "type": null,
     "power": 2,
     "resistencia": 1,
-    "isDefender": true,
     "ability": "Tirar brinquedo de criança: Quando colocado como defensor, você pode roubar uma carta da mão de algum oponente.",
     "isKing": false
   },
@@ -901,7 +912,7 @@ export const mainDeck = [
     "type": null,
     "power": 2,
     "resistencia": 2,
-    "ability": "Substituir Mendigo: Não tem subtipo. Pode entrar no Canto mesmo se você já tiver 5 cartas lá (descarte uma depois).",
+    "ability": "Quase um membro: mesmo se você já tiver 6 cartas em campo, você pode lançar o Cone sem precisar descartar uma carta.",
     "isKing": false
   },
   {
@@ -909,9 +920,10 @@ export const mainDeck = [
     "name": "Bolinha",
     "subtype": "Substituto",
     "type": null,
-    "power": 0,
+    "power": 3,
     "resistencia": 5,
-    "ability": "Presente para a pessoa certa: Não tem subtipo. Quando doado, o receptor compra 2 cartas.",
+    "ability": "Presente para a pessoa certa: Quando entra em jogo, escolha uma carta de ação do lixo e use imediatamente.",
+
     "isKing": false
   },
   {
@@ -921,7 +933,7 @@ export const mainDeck = [
     "type": null,
     "power": 0,
     "resistencia": 3,
-    "ability": "Jesus do WhatsApp: Não tem subtipo. Quando no Canto, sempre que alguém doar uma carta, você compra 1 carta.",
+    "ability": "Jesus do WhatsApp: sempre que alguém doar uma carta, você compra 1 carta.",
     "isKing": false
   },
   {
@@ -929,9 +941,10 @@ export const mainDeck = [
     "name": "Sereião",
     "subtype": "Substituto",
     "type": null,
-    "power": 1,
+    "power": 3,
     "resistencia": 4,
-    "ability": "Não tem subtipo. Resistência +2 quando defendendo.",
+    "cost": "Doe uma carta para um outro jogador",
+    "ability": "Assombração na academia: quando Sereião entra em jogo, escolha 1 mendigo de cada oponente. Aqueles mendigos recebem -1 de Força enquanto Sereião estiver em jogo.",
     "isKing": false
   },
   {
@@ -941,7 +954,8 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 3,
-    "ability": "Defensor. ",
+    "isDefender": true,
+    "ability": "Assombração na academia: ",
     "isKing": false,
     "img": "94.png"
   },
@@ -952,7 +966,7 @@ export const mainDeck = [
     "type": null,
     "power": 1,
     "resistencia": 2,
-    "ability": "Perigo para si mesmo: Não tem subtipo. Se este Substituto for roubado, o ladrão deve doar 2 cartas para outros jogadores.",
+    "ability": "Perigo para si mesmo: se for roubado, o ladrão deve doar 1 carta para o jogador atacado.",
     "isKing": false
   },
   {
@@ -999,61 +1013,11 @@ export const mainDeck = [
   {
     "id": 100,
     "name": "Janjão da caganeira",
-    "subtype": "Personagem",
+    "subtype": "Lenda",
     "type": null,
     "power": 1,
     "resistencia": 1,
     "ability": "Não tem subtipo. Pode entrar no Canto a qualquer momento como ação livre.",
     "isKing": false
   },
-  {
-    "id": 101,
-    "name": "O Velho do Banco",
-    "subtype": "Substituto",
-    "type": null,
-    "power": 3,
-    "resistencia": 3,
-    "ability": "Não tem subtipo. Não pode ser atacado se você tiver menos de 3 cartas no Canto.",
-    "isKing": false
-  },
-  {
-    "id": 102,
-    "name": "A Mulher das Plantas",
-    "subtype": "Substituto",
-    "type": null,
-    "power": 2,
-    "resistencia": 2,
-    "ability": "Não tem subtipo. Quando no Canto, você pode olhar o topo do baralho e decidir colocar no topo ou no fundo.",
-    "isKing": false
-  },
-  {
-    "id": 103,
-    "name": "O Catador Noturno",
-    "subtype": "Substituto",
-    "type": null,
-    "power": 2,
-    "resistencia": 4,
-    "ability": "Não tem subtipo. Só pode atacar ou ser atacado durante a vez de outros jogadores (não durante seu turno).",
-    "isKing": false
-  },
-  {
-    "id": 104,
-    "name": "A Senhora dos Gatos",
-    "subtype": "Substituto",
-    "type": null,
-    "power": 1,
-    "resistencia": 5,
-    "ability": "Não tem subtipo. Quando defendendo, ganha +1 de Resistência para cada outro Substituto no seu Canto.",
-    "isKing": false
-  },
-  {
-    "id": 105,
-    "name": "O Filósofo do Lixão",
-    "subtype": "Substituto",
-    "type": null,
-    "power": 4,
-    "resistencia": 2,
-    "ability": "Não tem subtipo. Quando atacando, se vencer, você pode trocar o mendigo roubado por um da sua Mão.",
-    "isKing": false
-  }
 ];

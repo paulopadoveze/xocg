@@ -258,8 +258,9 @@ function stackedItemStyle(idx) {
     // In expanded mode the stack container uses flex-column, so we only
     // need a small visual indent to show depth.
     return {
-      zIndex: props.stackedCards.length - idx,
+      zIndex: props.stackedCards.length + idx,
       marginLeft: `${(idx + 1) * 4}px`,
+
     }
   }
   // Collapsed: absolute offset so cards peek behind the base card
@@ -275,7 +276,6 @@ function stackedItemStyle(idx) {
 .stack-card {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: flex-start;
   transition: outline 0.15s ease;
 
@@ -368,8 +368,6 @@ function stackedItemStyle(idx) {
       top: unset;
       left: unset;
       display: flex;
-      flex-direction: column;
-      gap: v-bind('`${expandedGap}px`');
       margin-top: v-bind('`${expandedGap}px`');
       pointer-events: auto;
     }

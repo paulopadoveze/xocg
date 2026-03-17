@@ -17,7 +17,7 @@
           'card--interactive': true,
           'card--dragging': isDragging,
         },
-        getCardSubtypeClass(card.subtype)
+        getCardSubtypeClass(card.type)
       ]"
       :draggable="draggable"
       @dragstart="handleDragStart"
@@ -67,9 +67,9 @@
     </div>
 
     <template #content>
-      <div class="card -large" :class="getCardSubtypeClass(card.subtype)">
+      <div class="card -large" :class="getCardSubtypeClass(card.type)">
         <div class="card__content">
-          
+
           <div class="card__header">
             <h3 class="card__name-wrapper">{{ card.name }}</h3>
             <span v-if="card.power" class="card__power">
@@ -82,7 +82,9 @@
           <div class="card__body">
             <div class="card__type">{{ card.subtype }}</div>
             <div class="card__description">
-              <div class="card__powerTag -defender" v-if="card.isDefender">Defensor</div>  
+            <div class="card__powerTag -defender" v-if="card.isDefender">Defensor</div>  
+            <div class="card__powerTag -atacante" v-if="card.isAttacker">Atacante</div>  
+            <div class="card__cost " v-if="card.cost">{{card.cost}}</div>  
               {{ card.ability }}
             </div>
           </div>
@@ -109,16 +111,10 @@ const props = defineProps({
     type: [Number, String],
     required: true
   },
-  /** When true the card element is draggable */
   draggable: {
     type: Boolean,
     default: true
   },
-  /**
-   * Drag metadata injected by the parent zone.
-   * Merged into the dataTransfer JSON on dragstart.
-   * Example: { source: 'hand', sourcePlayerId: 'abc' }
-   */
   dragMeta: {
     type: Object,
     default: () => ({})
@@ -153,19 +149,24 @@ const cardContent = ref()
 const isDragging = ref(false)
 
 function getCardSubtypeClass(type) {
-  if(type=="Substituto"){
+
+
+  if(type === "Convidado") {
+    return 'type-guest'
+  }
+  if(type === "Substituto"){
     return 'type-substitute'
   }
-  if(type=="Ouvinte"){
+  if(type === "Ouvinte"){
     return 'type-listener'
   }
-  if(type=="Personagem"){
+  if(type === "Personagem"){
     return 'type-character'
   }
-  if(type=="Tradicional"){
+  if(type === "Tradicional"){
     return 'type-host'
   }
-  if(type=="Lenda"){
+  if(type === "Lenda"){
     return 'type-legend'
   }
 
@@ -249,6 +250,10 @@ const handleBlur = () => {
   &--dragging {
     opacity: 0.4;
     cursor: grabbing;
+  }
+
+  &.type-guest {
+    --bgCard: tomato
   }
   
   &.type-substitute {
@@ -540,6 +545,14 @@ const handleBlur = () => {
       transform: translateY(-4px) scale(1.03);
     }
   }
+}
+
+.card__cost {
+  font-weight: 700;
+  color: #303030;
+  border-bottom: 2px dotted black;
+  padding-bottom: 0.2rem;
+  margin-bottom: 0.2rem;
 }
 
 </style>

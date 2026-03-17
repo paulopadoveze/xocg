@@ -2,8 +2,6 @@
   <div class="game-container">
     <!-- Loading state -->
     <main class="mainboard">     
-       
-
       <div v-if="loading" class="game-loading">
         <div class="game-loading__spinner"></div>
         <p class="game-loading__text">Loading game...</p>
@@ -19,9 +17,6 @@
         <div class="players-board-container" :class="getNumberOfPlayerCSSClass">
 
           <template v-for="playerState in gameState.players" :key="playerState.id">
-            <div style="position: absolute; top: 0; right: 0; background: black; font-size: 10px;"></div>
-            <pre><code>{{playerState.field}}</code></pre>
-
             <div class="playerBoard" v-if="currentPlayer.id !== playerState.id" :class="{currentPlayer: playerState.id === currentTurnPlayer.id }">
               <div class="playerField">
                 <PlayerField
@@ -59,7 +54,6 @@
     </main>
    
     <aside class="sidebar">
-      <div class="cardDetails"></div>  
       <div class="gameDecks">
         <DeckComponent
           title="Others Deck"
@@ -122,23 +116,7 @@
           </div>
         </div>
       </div>
-      <div class="game-garbage">
-        <h3 class="game-garbage__title">Garbage</h3>
-        <div class="game-garbage__cards">
-          <div 
-            v-for="cardId in gameState.garbage?.cardIds || []"
-            :key="cardId"
-            @dblclick="takeFromGarbage(cardId)"
-            class="game-garbage__card"
-          >
-            {{ getCardDetails(cardId)?.name || `Card ${cardId}` }}
-          </div>
-        </div>
-        <div class="game-garbage__count">
-          {{ gameState.garbage?.count || 0 }} cards
-        </div>
-      </div>
-
+     
       <!-- Game Log -->
       <div class="gamelog-container">
         <GameLog :logs="gameState.logs" :current-player-id="playerId" />
@@ -358,44 +336,12 @@ function getCardDetails(cardId) {
 async function onPlayerFieldUpdate(playerIdParam, newCards) {
   try {
     const player = gameState.value.players.find(p => p.id === playerIdParam)
-    if (!player) {
-      //console.warn('Player not found for field update:', playerIdParam)
-      return
-    }
+    if (!player) return
 
-    // Convert nested stack representation ({ cardId, cards: [...] })
-    // into flat field entries the game state expects ({ cardId, isTapped, position, isStackedOn })
-    const flatField = []
-    for (let i = 0; i < (Array.isArray(newCards) ? newCards.length : 0); i++) {
-      const item = newCards[i]
-      if (!item) continue
-      // main/top-level card
-      const mainCard = {
-        ...(typeof item === 'object' ? { ...item } : { cardId: item }),
-        isTapped: item.isTapped || false,
-        position: item.position != null ? item.position : flatField.length,
-      }
-      // ensure we don't keep nested 'cards' array in the flat model
-      delete mainCard.cards
-      flatField.push(mainCard)
-
-      // children (stacked cards) — single-level only
-      if (Array.isArray(item.cards) && item.cards.length) {
-        for (const child of item.cards) {
-          if (!child) continue
-          const childEntry = {
-            ...(typeof child === 'object' ? { ...child } : { cardId: child }),
-            isTapped: child.isTapped || false,
-            position: mainCard.position,
-            isStackedOn: mainCard.cardId
-          }
-          delete childEntry.cards
-          flatField.push(childEntry)
-        }
-      }
-    }
-
-    player.field = flatField
+    // newCards is ALREADY in nested format from PlayerField
+    // Just store it directly - no conversion needed!
+    player.field = newCards
+    
     addLog(`${player.name} field updated`, 'system')
     await saveGameStateToDb()
   } catch (err) {
@@ -418,67 +364,56 @@ async function onPlayerFieldUpdate(playerIdParam, newCards) {
  * source values: 'hand' | 'field' | 'garbage' | 'deck'
  */
 function removeCardFromSource(payload) {
-  console.log('removecard', payload)
+  console.log('removeCardFromSource', payload)
   const { source, cardId, sourcePlayerId, stackIdx, cardIdx } = payload
 
   if (source === 'hand') {
     const player = gameState.value.players.find(p => p.id === sourcePlayerId)
     if (!player) return null
-    // Compare as both number and string to handle type coercion
     const idx = player.hand.findIndex(id => id == cardId)
     if (idx === -1) return null
-    player.hand.splice(idx, 1)
-    return { cardId }
+    const removed = player.hand.splice(idx, 1)[0]
+    // Return single card as array
+    return { cards: [removed] }
   }
 
   if (source === 'field') {
     const player = gameState.value.players.find(p => p.id === sourcePlayerId)
     if (!player) return null
 
-    // Stacked card (cardIdx is a number, not null)
-    if (typeof cardIdx === 'number' && cardIdx !== null) {
-      const normalized = normalizeFieldCards(player.field)
-      const stackEntry = normalized[stackIdx]
+    // If cardIdx is provided, we're removing a child card
+    if (typeof cardIdx === 'number' && cardIdx !== null && cardIdx >= 0) {
+      const stackEntry = player.field[stackIdx]
       if (!stackEntry || !stackEntry.cards || !stackEntry.cards[cardIdx]) return null
-      const removed = { ...stackEntry.cards[cardIdx] }
-      // Remove from flat field: find the entry with matching cardId that has isStackedOn
-      const flatIdx = player.field.findIndex(
-        e => e.cardId == removed.cardId && e.isStackedOn != null
-      )
-      if (flatIdx !== -1) {
-        player.field.splice(flatIdx, 1)
-      } else {
-        // nested format — remove from cards array
-        const nestedStack = player.field[stackIdx]
-        if (nestedStack?.cards) nestedStack.cards.splice(cardIdx, 1)
-      }
-      return removed
+      
+      // Remove the child card only
+      const removed = stackEntry.cards.splice(cardIdx, 1)[0]
+      return { cards: [removed.cardId] }
     }
 
-    // Base card of a stack (cardIdx is null)
-    const normalized = normalizeFieldCards(player.field)
-    const stackEntry = normalized[stackIdx]
+    // Removing a base card - get ALL cards from the stack
+    const stackEntry = player.field[stackIdx]
     if (!stackEntry) return null
-    const removed = { ...stackEntry }
-
-    // Remove the base card and all its stacked children from the flat field
-    const baseId = stackEntry.cardId
-    for (let i = player.field.length - 1; i >= 0; i--) {
-      const e = player.field[i]
-      if (e.cardId == baseId || e.isStackedOn == baseId) {
-        player.field.splice(i, 1)
-      }
+    
+    // Remove the entire stack
+    const removed = player.field.splice(stackIdx, 1)[0]
+    
+    // Collect ALL card IDs from the stack (base + all children)
+    const allCardIds = [removed.cardId]
+    if (removed.cards && removed.cards.length > 0) {
+      removed.cards.forEach(child => allCardIds.push(child.cardId))
     }
-    return removed
+    
+    return { cards: allCardIds }
   }
 
   if (source === 'garbage') {
     const garbage = gameState.value.garbage
     const idx = (garbage.cardIds || []).findIndex(id => id == cardId)
     if (idx === -1) return null
-    garbage.cardIds.splice(idx, 1)
+    const removed = garbage.cardIds.splice(idx, 1)[0]
     garbage.count = Math.max(0, (garbage.count || 0) - 1)
-    return { cardId }
+    return { cards: [removed] }
   }
 
   if (source === 'deck') {
@@ -486,52 +421,18 @@ function removeCardFromSource(payload) {
     if (!deck) return null
     const idx = (deck.cardIds || []).findIndex(id => id == cardId)
     if (idx === -1) return null
-    deck.cardIds.splice(idx, 1)
+    const removed = deck.cardIds.splice(idx, 1)[0]
     deck.count = Math.max(0, (deck.count || 0) - 1)
-    return { cardId }
+    return { cards: [removed] }
   }
 
   return null
 }
 
-/** Normalize a flat field array into nested stacks */
-function normalizeFieldCards(list) {
-  if (!Array.isArray(list)) return []
-  const usesNested = list.some(item => Array.isArray(item?.cards))
-  if (usesNested) {
-    return list.filter(Boolean).map(item => ({
-      ...item,
-      cards: Array.isArray(item.cards) ? item.cards.filter(Boolean) : []
-    }))
-  }
 
-  const idToEntry = new Map()
-  list.forEach(item => {
-    if (!item) return
-    idToEntry.set(item.cardId, { ...item, cards: [] })
-  })
-  const result = []
-  list.forEach(item => {
-    if (!item) return
-    const entry = idToEntry.get(item.cardId)
-    if (!item.isStackedOn) {
-      result.push(entry)
-    } else {
-      const parent = idToEntry.get(item.isStackedOn)
-      if (parent) parent.cards.push(entry)
-      else result.push(entry)
-    }
-  })
-  return result
-}
-
-/**
- * Card dropped onto a player's field area (not on a specific stack).
- * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target, targetFieldId }
- */
 async function onDropOnField(payload) {
-  console.log('drop on filed')
-  const { cardId, targetFieldId } = payload
+  console.log('drop on field', payload)
+  const { targetFieldId } = payload
   const targetPlayer = gameState.value.players.find(p => p.id === targetFieldId)
   if (!targetPlayer) return
 
@@ -541,39 +442,39 @@ async function onDropOnField(payload) {
     return
   }
 
-  // Add as a new top-level field card
-  targetPlayer.field.push({
-    cardId,
-    isTapped: removed.isTapped || false,
-    position: targetPlayer.field.length,
-    isStackedOn: null,
-  })
+  const { cards } = removed
+  
+  if (cards.length === 0) return
 
-  // If the removed card has stacked children, move them all together
-  if (Array.isArray(removed.cards) && removed.cards.length > 0) {
-    for (const child of removed.cards) {
-      targetPlayer.field.push({
-        cardId: child.cardId,
-        isTapped: child.isTapped || false,
-        position: targetPlayer.field.length - 1, // Same position as parent
-        isStackedOn: cardId, // Reference to the parent card
-      })
-    }
-    addLog(`Stack with ${removed.cards.length + 1} cards moved to ${targetPlayer.name}'s field`)
+  // First card becomes the base, rest become children
+  const baseCardId = cards[0]
+  const childCardIds = cards.slice(1)
+
+  // Create new stack
+  const newStack = {
+    cardId: baseCardId,
+    isTapped: false,
+    position: targetPlayer.field.length,
+    cards: childCardIds.map(cardId => ({
+      cardId,
+      isTapped: false
+    }))
+  }
+
+  targetPlayer.field.push(newStack)
+
+  if (cards.length > 1) {
+    addLog(`Stack with ${cards.length} cards moved to ${targetPlayer.name}'s field`)
   } else {
-    addLog(`Card ${cardId} moved to ${targetPlayer.name}'s field`)
+    addLog(`Card ${baseCardId} moved to ${targetPlayer.name}'s field`)
   }
 
   await saveGameStateToDb()
 }
 
-/**
- * Card dropped onto a specific stack inside a PlayerField.
- * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target, targetStackIdx, targetFieldId }
- */
+// Card dropped onto a specific stack
 async function onDropOnStack(payload) {
-
-  const { cardId, targetFieldId, targetStackIdx } = payload
+  const { targetFieldId, targetStackIdx } = payload
   const targetPlayer = gameState.value.players.find(p => p.id === targetFieldId)
   if (!targetPlayer) return
 
@@ -583,42 +484,52 @@ async function onDropOnStack(payload) {
     return
   }
 
-  // Find the base card of the target stack
-  const normalized = normalizeFieldCards(targetPlayer.field)
-  const targetStack = normalized[targetStackIdx]
+  const { cards } = removed
+  if (cards.length === 0) return
 
-  console.log('target stack', targetStack)
+  // Find target stack
+  let targetStack = targetPlayer.field[targetStackIdx]
   
   if (!targetStack) {
-    // // Fallback: add as top-level
-    targetPlayer.field.push({ cardId, isTapped: false, position: targetPlayer.field.length, isStackedOn: null })
-    addLog(`Card ${cardId} added to ${targetPlayer.name}'s field`)
+    // Create new stack if target doesn't exist
+    const baseCardId = cards[0]
+    const childCardIds = cards.slice(1)
+    
+    targetStack = {
+      cardId: baseCardId,
+      isTapped: false,
+      position: targetPlayer.field.length,
+      cards: childCardIds.map(cardId => ({
+        cardId,
+        isTapped: false
+      }))
+    }
+    targetPlayer.field.push(targetStack)
+    
+    addLog(`Stack with ${cards.length} cards created in ${targetPlayer.name}'s field`)
     await saveGameStateToDb()
     return
   }
 
-  // Add the card to the existing stack's cards array (nested format)
+  // Ensure target stack has cards array
   if (!targetStack.cards) {
     targetStack.cards = []
   }
-  targetStack.cards.push({ cardId, isTapped: false })
 
-  // Convert the entire field to nested format and save
-  targetPlayer.field = normalized.map(entry => ({
-    ...entry,
-    cards: entry.cards || []
-  }))
+  // Add ALL dropped cards as children to the target stack
+  cards.forEach(cardId => {
+    targetStack.cards.push({
+      cardId,
+      isTapped: false
+    })
+  })
 
-  addLog(`Card ${cardId} stacked on ${targetStack.cardId} in ${targetPlayer.name}'s field`)
+  addLog(`${cards.length} cards stacked on ${targetStack.cardId} in ${targetPlayer.name}'s field`)
   await saveGameStateToDb()
 }
 
-/**
- * Card dropped onto the player's own hand.
- * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target }
- */
+// Card dropped onto player's hand
 async function onDropOnHand(payload) {
-  const { cardId } = payload
   const player = gameState.value.players.find(p => p.id === playerId.value)
   if (!player) return
 
@@ -628,41 +539,19 @@ async function onDropOnHand(payload) {
     return
   }
 
-  player.hand.push(cardId)
-  addLog(`Card ${cardId} returned to ${player.name}'s hand`)
+  const { cards } = removed
+  
+  // Add ALL cards to hand
+  cards.forEach(cardId => {
+    player.hand.push(cardId)
+  })
+
+  addLog(`${cards.length} cards returned to ${player.name}'s hand`)
   await saveGameStateToDb()
 }
 
-/**
- * Card dropped onto the deck.
- * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target, deckType }
- */
-async function onDropOnDeck(payload) {
-  const { cardId } = payload
-  const deck = gameState.value.decks?.main
-  if (!deck) return
-
-  const removed = removeCardFromSource(payload)
-  if (!removed) {
-    console.warn('onDropOnDeck: card not found in source', payload)
-    return
-  }
-
-  // Add to bottom of deck
-  if (!deck.cardIds) deck.cardIds = []
-  deck.cardIds.unshift(cardId)
-  deck.count = (deck.count || 0) + 1
-
-  addLog(`Card ${cardId} returned to deck`)
-  await saveGameStateToDb()
-}
-
-/**
- * Card dropped onto the garbage pile.
- * payload: { source, cardId, sourcePlayerId, stackIdx, cardIdx, target }
- */
+// Card dropped onto garbage
 async function onDropOnGarbage(payload) {
-  const { cardId } = payload
   const garbage = gameState.value.garbage
   if (!garbage) return
 
@@ -672,14 +561,44 @@ async function onDropOnGarbage(payload) {
     return
   }
 
+  const { cards } = removed
+  
+  // Add ALL cards to garbage
   if (!garbage.cardIds) garbage.cardIds = []
-  garbage.cardIds.push(cardId)
-  garbage.count = (garbage.count || 0) + 1
+  cards.forEach(cardId => {
+    garbage.cardIds.push(cardId)
+  })
+  garbage.count = (garbage.count || 0) + cards.length
 
-  addLog(`Card ${cardId} discarded to garbage`)
+  addLog(`${cards.length} cards discarded to garbage`)
   await saveGameStateToDb()
 }
 
+// Card dropped onto deck
+async function onDropOnDeck(payload) {
+  const deck = gameState.value.decks?.main
+  if (!deck) return
+
+  const removed = removeCardFromSource(payload)
+  if (!removed) {
+    console.warn('onDropOnDeck: card not found in source', payload)
+    return
+  }
+
+  const { cards } = removed
+  
+  // Add ALL cards to deck (in reverse order to maintain stack order)
+  if (!deck.cardIds) deck.cardIds = []
+  
+  // Add cards in reverse so the first card ends up on top
+  for (let i = cards.length - 1; i >= 0; i--) {
+    deck.cardIds.unshift(cards[i])
+  }
+  deck.count = (deck.count || 0) + cards.length
+
+  addLog(`${cards.length} cards returned to deck`)
+  await saveGameStateToDb()
+}
 async function loadGameState() {
   try {
     console.log('📥 Loading initial game state...')
@@ -821,15 +740,13 @@ async function playCard(cardId) {
   
   const playedCard = player.hand.splice(cardIndex, 1)[0]
   
-  // Create a field card object instead of just pushing the ID
-  const fieldCard = {
+  // Create a new stack with empty cards array
+  player.field.push({
     cardId: playedCard,
     isTapped: false,
-    position: player.field.length, // Default position is next in sequence
-    isStackedOn: null // Not stacked by default
-  }
-  
-  player.field.push(fieldCard)
+    position: player.field.length,
+    cards: [] // Empty array for future stacked cards
+  })
   
   if (player.stats) {
     player.stats.cardsPlayed++
@@ -841,6 +758,7 @@ async function playCard(cardId) {
   await saveGameStateToDb()
 }
 
+
 async function tapCard(cardId) {
   if (!isPlayerTurn.value) return
   
@@ -850,18 +768,34 @@ async function tapCard(cardId) {
   }
 
   const player = currentPlayer.value
-  const cardIndex = player.field.findIndex(fieldCard => fieldCard.cardId === cardId)
-  if (cardIndex === -1) return
   
-  // Toggle the tapped state
-  player.field[cardIndex].isTapped = !player.field[cardIndex].isTapped
+  // Search in base cards
+  const baseCardIndex = player.field.findIndex(fieldCard => fieldCard.cardId === cardId)
+  if (baseCardIndex !== -1) {
+    player.field[baseCardIndex].isTapped = !player.field[baseCardIndex].isTapped
+    const cardDetails = getCardDetails(cardId)
+    const action = player.field[baseCardIndex].isTapped ? 'tapped' : 'untapped'
+    addLog(`${player.name} ${action} ${cardDetails.name}`)
+    await saveGameStateToDb()
+    return
+  }
   
-  const cardDetails = getCardDetails(cardId)
-  const action = player.field[cardIndex].isTapped ? 'tapped' : 'untapped'
-  addLog(`${player.name} ${action} ${cardDetails.name}`)
-  
-  await saveGameStateToDb()
+  // Search in stacked cards
+  for (const stack of player.field) {
+    if (stack.cards) {
+      const childIndex = stack.cards.findIndex(child => child.cardId === cardId)
+      if (childIndex !== -1) {
+        stack.cards[childIndex].isTapped = !stack.cards[childIndex].isTapped
+        const cardDetails = getCardDetails(cardId)
+        const action = stack.cards[childIndex].isTapped ? 'tapped' : 'untapped'
+        addLog(`${player.name} ${action} ${cardDetails.name}`)
+        await saveGameStateToDb()
+        return
+      }
+    }
+  }
 }
+
 
 async function takeFromGarbage(cardId) {
   if (!isPlayerTurn.value) return
@@ -1009,11 +943,38 @@ async function saveGameStateToDb() {
       return
     }
     
+    // Ensure all player fields are in nested format before saving
+    gameState.value.players.forEach(player => {
+      if (player.field && player.field.length > 0) {
+        // If any card has isStackedOn, convert to nested
+        if (player.field[0]?.isStackedOn !== undefined) {
+          const nestedField = []
+          const baseCards = player.field.filter(c => !c.isStackedOn)
+          
+          baseCards.forEach(base => {
+            nestedField.push({
+              cardId: base.cardId,
+              isTapped: base.isTapped || false,
+              position: base.position,
+              cards: player.field
+                .filter(c => c.isStackedOn === base.cardId)
+                .map(c => ({ cardId: c.cardId, isTapped: c.isTapped || false }))
+            })
+          })
+          player.field = nestedField
+        } else {
+          // Already nested, just ensure each stack has a cards array
+          player.field.forEach(stack => {
+            if (!stack.cards) stack.cards = []
+          })
+        }
+      }
+    })
+    
     const { saveGameState } = useSupabase()
     await saveGameState(room.id, gameState.value)
-    //console.log('💾 Game state saved (will trigger realtime update)')
   } catch (err) {
-    //console.error('Error saving game state:', err)
+    console.error('Error saving game state:', err)
     throw err
   }
 }

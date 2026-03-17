@@ -56,67 +56,21 @@ const expandedStacks = ref({})
 const isDragOver = ref(false)
 
 function handleDragStart(payload, card) {
-  emit('drag-start', payload)
+  // Enhance payload with source information
+  emit('drag-start', {
+    ...payload,
+    source: 'field',
+    sourcePlayerId: props.fieldId,
+    stackIdx: payload.stackIdx,
+    cardIdx: payload.cardIdx
+  })
 }
-
-// normalize incoming field data to nested format PlayerField expects
-function normalizeCards(list) {
-  if (!Array.isArray(list)) return []
-
-  // If data already uses nested `cards` arrays, just sanitize and return
-  const usesNested = list.some(item => Array.isArray(item?.cards))
-  if (usesNested) {
-    return list
-      .filter(Boolean)
-      .map(item => ({ ...item, cards: Array.isArray(item.cards) ? item.cards.filter(Boolean).map(c => ({ ...c })) : [] }))
-  }
-
-  // Otherwise, convert flat model (entries with `isStackedOn`) into nested groups
-  const idToEntry = new Map()
-  const topLevelOrder = []
-
-  // First pass: create shallow copies and register
-  list.forEach(item => {
-    if (!item) return
-    const copy = { ...item }
-    copy.cards = []
-    idToEntry.set(copy.cardId, copy)
-    topLevelOrder.push(copy)
-  })
-
-  // Second pass: attach stacked children to their parent if present
-  const result = []
-  topLevelOrder.forEach(entry => {
-    if (!entry.isStackedOn) {
-      result.push(entry)
-    }
-  })
-
-  // Attach children (preserve original order)
-  list.forEach(item => {
-    if (!item) return
-    if (item.isStackedOn) {
-      const parent = idToEntry.get(item.isStackedOn)
-      if (parent) {
-        const childCopy = { ...item }
-        delete childCopy.isStackedOn
-        childCopy.cards = Array.isArray(childCopy.cards) ? childCopy.cards.filter(Boolean).map(c => ({ ...c })) : []
-        parent.cards.push(childCopy)
-      } else {
-        // parent not found — treat as top-level
-        const orphanCopy = { ...item, cards: [] }
-        result.push(orphanCopy)
-      }
-    }
-  })
-
-  return result
-}
-
+                       
 const cardsList = computed({
-  get: () => normalizeCards(props.cards || []),
+  get: () => props.cards || [],
   set(val) {
-    // no op; parent listens to update event
+    // Emit the nested format back to parent when it changes
+    emit('update:cards', val)
   }
 })
 
@@ -165,7 +119,9 @@ function onDrop(event) {
   display: flex;
   flex-wrap: wrap;
   gap: 2.5rem;
-
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
   transition: outline 0.15s ease, background 0.15s ease;
   height: 100%;
 }
